@@ -6,23 +6,29 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest"
+    "test": "jest",
+    "integ": "integ-runner --parallel-regions eu-west-1 --update-on-failed --disable-update-workflow --force --verbose --profiles perso --clean false"
   },
   "devDependencies": {
     "@types/jest": "^27.5.2",
     "@types/node": "10.17.27",
     "@types/prettier": "2.6.0",
-    "aws-cdk-lib": "2.43.1",
+    "@types/uuid": "^8.3.4",
+    "aws-cdk-lib": "^2.43.1",
     "constructs": "^10.1.124",
     "jest": "^27.5.1",
     "ts-jest": "^27.1.4",
     "typescript": "~3.9.7"
   },
   "peerDependencies": {
-    "aws-cdk-lib": "2.43.1",
+    "aws-cdk-lib": "^2.43.1",
     "constructs": "^10.0.0"
   },
   "dependencies": {
-    "dynamodb-toolbox": "^0.4.3"
+    "@aws-cdk/integ-runner": "^2.43.1",
+    "@aws-cdk/integ-tests-alpha": "^2.45.0-alpha.0",
+    "aws-sdk": "^2.1231.0",
+    "dynamodb-toolbox": "^0.4.3",
+    "uuid": "^9.0.0"
   }
 }
