@@ -79,6 +79,6 @@ const invoke = integ.assertions.invokeFunction({
   payload: JSON.stringify({ type: "Hello" }),
 });
 
-invoke.expect(ExpectedResult.objectLike({ Payload: "ok" }));
+invoke.expect(ExpectedResult.objectLike({ Payload: '"ok"' }));
 
 app.synth();
