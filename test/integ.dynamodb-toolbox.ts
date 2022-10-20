@@ -79,6 +79,21 @@ const invoke = integ.assertions.invokeFunction({
   payload: JSON.stringify({ type: "Hello" }),
 });
 
-invoke.expect(ExpectedResult.objectLike({ Payload: "ok" }));
+const stepFunctionInvoke = integ.assertions.awsApiCall(
+  "StepFunctions",
+  "startSyncExecution",
+  {
+    stateMachineArn: `arn:aws:states:${Stack.of(testCase).region}:${
+      Stack.of(testCase).account
+    }:stateMachine:SaveAnimalStepFunction2` /* required */,
+    input: JSON.stringify({ type: "hello" }),
+  }
+);
+
+invoke.expect(
+  ExpectedResult.objectLike({
+    Payload: "ok",
+  })
+);
 
 app.synth();
