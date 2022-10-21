@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TestTable = void 0;
+const dynamodb_1 = require("aws-sdk/clients/dynamodb");
+const dynamodb_toolbox_1 = require("dynamodb-toolbox");
+const documentClient = new dynamodb_1.DocumentClient({ region: "eu-west-1" });
+exports.TestTable = new dynamodb_toolbox_1.Table({
+    name: "Test",
+    partitionKey: "type",
+    sortKey: "id",
+    DocumentClient: documentClient,
+});
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoidGFibGUuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJ0YWJsZS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7QUFBQSx1REFBMEQ7QUFDMUQsdURBQXlDO0FBRXpDLE1BQU0sY0FBYyxHQUFHLElBQUkseUJBQWMsQ0FBQyxFQUFFLE1BQU0sRUFBRSxXQUFXLEVBQUUsQ0FBQyxDQUFDO0FBRXRELFFBQUEsU0FBUyxHQUFHLElBQUksd0JBQUssQ0FBQztJQUNqQyxJQUFJLEVBQUUsTUFBTTtJQUNaLFlBQVksRUFBRSxNQUFNO0lBQ3BCLE9BQU8sRUFBRSxJQUFJO0lBQ2IsY0FBYyxFQUFFLGNBQWM7Q0FDL0IsQ0FBQyxDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgRG9jdW1lbnRDbGllbnQgfSBmcm9tIFwiYXdzLXNkay9jbGllbnRzL2R5bmFtb2RiXCI7XG5pbXBvcnQgeyBUYWJsZSB9IGZyb20gXCJkeW5hbW9kYi10b29sYm94XCI7XG5cbmNvbnN0IGRvY3VtZW50Q2xpZW50ID0gbmV3IERvY3VtZW50Q2xpZW50KHsgcmVnaW9uOiBcImV1LXdlc3QtMVwiIH0pO1xuXG5leHBvcnQgY29uc3QgVGVzdFRhYmxlID0gbmV3IFRhYmxlKHtcbiAgbmFtZTogXCJUZXN0XCIsXG4gIHBhcnRpdGlvbktleTogXCJ0eXBlXCIsXG4gIHNvcnRLZXk6IFwiaWRcIixcbiAgRG9jdW1lbnRDbGllbnQ6IGRvY3VtZW50Q2xpZW50LFxufSk7XG4iXX0=

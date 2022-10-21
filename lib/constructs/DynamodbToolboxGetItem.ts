@@ -5,7 +5,7 @@ import { applyKeyAttributeProperties } from "../utils/getItem/applyKeyAttributes
 import { applyKeyAttributePropertiesForUser } from "../utils/getItem/applyKeyAttributesForUser";
 
 export class DynamodbToolboxGetItem extends Construct {
-  public chain: Chain;
+  public task: CustomState;
 
   constructor(
     scope: Construct,
@@ -14,19 +14,15 @@ export class DynamodbToolboxGetItem extends Construct {
   ) {
     super(scope, id);
 
-    const transformKeyTask = new Pass(this, "TransformKey", {
-      parameters: {
-        input: applyKeyAttributeProperties(entity),
-      },
-    });
-
     const stateJson = {
       Type: "Task",
       Resource: "arn:aws:states:::dynamodb:getItem",
       Parameters: {
-        TableName: entity.table.tableName,
-        // "Item.$: "$.object", ??
-        "Item.$": "$",
+        TableName: entity.table.name,
+        Key: applyKeyAttributeProperties(entity),
+      },
+      ResultSelector: {
+        Item: applyKeyAttributePropertiesForUser(entity),
       },
       ResultPath: null,
     };
@@ -34,14 +30,6 @@ export class DynamodbToolboxGetItem extends Construct {
       stateJson,
     });
 
-    const transformKeyForUserTask = new Pass(this, "TransformKeyForUser", {
-      parameters: {
-        input: applyKeyAttributePropertiesForUser(entity),
-      },
-    });
-
-    this.chain = transformKeyTask
-      .next(getItemTask)
-      .next(transformKeyForUserTask);
+    this.task = getItemTask;
   }
 }

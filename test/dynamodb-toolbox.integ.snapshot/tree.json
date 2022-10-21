@@ -1,0 +1,573 @@
+{
+  "version": "tree-0.1",
+  "tree": {
+    "id": "App",
+    "path": "",
+    "children": {
+      "Tree": {
+        "id": "Tree",
+        "path": "Tree",
+        "constructInfo": {
+          "fqn": "constructs.Construct",
+          "version": "10.1.124"
+        }
+      },
+      "testStack": {
+        "id": "testStack",
+        "path": "testStack",
+        "children": {
+          "BigTable": {
+            "id": "BigTable",
+            "path": "testStack/BigTable",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "testStack/BigTable/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::DynamoDB::Table",
+                  "aws:cdk:cloudformation:props": {
+                    "keySchema": [
+                      {
+                        "attributeName": "type",
+                        "keyType": "HASH"
+                      },
+                      {
+                        "attributeName": "id",
+                        "keyType": "RANGE"
+                      }
+                    ],
+                    "attributeDefinitions": [
+                      {
+                        "attributeName": "type",
+                        "attributeType": "S"
+                      },
+                      {
+                        "attributeName": "id",
+                        "attributeType": "S"
+                      }
+                    ],
+                    "billingMode": "PAY_PER_REQUEST",
+                    "tableName": "Test"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_dynamodb.CfnTable",
+                  "version": "2.45.0"
+                }
+              },
+              "ScalingRole": {
+                "id": "ScalingRole",
+                "path": "testStack/BigTable/ScalingRole",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.Resource",
+                  "version": "2.45.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_dynamodb.Table",
+              "version": "2.45.0"
+            }
+          },
+          "DynamodbPut": {
+            "id": "DynamodbPut",
+            "path": "testStack/DynamodbPut",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "testStack/DynamodbPut/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                  "aws:cdk:cloudformation:props": {
+                    "assumeRolePolicyDocument": {
+                      "Statement": [
+                        {
+                          "Action": "sts:AssumeRole",
+                          "Effect": "Allow",
+                          "Principal": {
+                            "Service": "lambda.amazonaws.com"
+                          }
+                        }
+                      ],
+                      "Version": "2012-10-17"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                  "version": "2.45.0"
+                }
+              },
+              "DefaultPolicy": {
+                "id": "DefaultPolicy",
+                "path": "testStack/DynamodbPut/DefaultPolicy",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "testStack/DynamodbPut/DefaultPolicy/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                      "aws:cdk:cloudformation:props": {
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "dynamodb:PutItem",
+                              "Effect": "Allow",
+                              "Resource": {
+                                "Fn::GetAtt": [
+                                  "BigTableE7B4B4BA",
+                                  "Arn"
+                                ]
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        },
+                        "policyName": "DynamodbPutDefaultPolicy4DFD3824",
+                        "roles": [
+                          {
+                            "Ref": "DynamodbPutF372CD0B"
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                      "version": "2.45.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Policy",
+                  "version": "2.45.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_iam.Role",
+              "version": "2.45.0"
+            }
+          },
+          "LambdaPutItem": {
+            "id": "LambdaPutItem",
+            "path": "testStack/LambdaPutItem",
+            "children": {
+              "Code": {
+                "id": "Code",
+                "path": "testStack/LambdaPutItem/Code",
+                "children": {
+                  "Stage": {
+                    "id": "Stage",
+                    "path": "testStack/LambdaPutItem/Code/Stage",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.AssetStaging",
+                      "version": "2.45.0"
+                    }
+                  },
+                  "AssetBucket": {
+                    "id": "AssetBucket",
+                    "path": "testStack/LambdaPutItem/Code/AssetBucket",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.BucketBase",
+                      "version": "2.45.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3_assets.Asset",
+                  "version": "2.45.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "testStack/LambdaPutItem/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Function",
+                  "aws:cdk:cloudformation:props": {
+                    "code": {
+                      "s3Bucket": {
+                        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+                      },
+                      "s3Key": "842e0f6019078d4c0e7ce163cb38da5f11279ccd69de80841aadc2b18229ac15.zip"
+                    },
+                    "role": {
+                      "Fn::GetAtt": [
+                        "DynamodbPutF372CD0B",
+                        "Arn"
+                      ]
+                    },
+                    "environment": {
+                      "variables": {
+                        "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1"
+                      }
+                    },
+                    "functionName": "Putitemlambda",
+                    "handler": "index.main",
+                    "runtime": "nodejs14.x"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnFunction",
+                  "version": "2.45.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_lambda_nodejs.NodejsFunction",
+              "version": "2.45.0"
+            }
+          },
+          "Put": {
+            "id": "Put",
+            "path": "testStack/Put",
+            "children": {
+              "GenerateUuidTask": {
+                "id": "GenerateUuidTask",
+                "path": "testStack/Put/GenerateUuidTask",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_stepfunctions.Pass",
+                  "version": "2.45.0"
+                }
+              },
+              "IntermediaryTask": {
+                "id": "IntermediaryTask",
+                "path": "testStack/Put/IntermediaryTask",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_stepfunctions.Pass",
+                  "version": "2.45.0"
+                }
+              },
+              "MergeInputTask": {
+                "id": "MergeInputTask",
+                "path": "testStack/Put/MergeInputTask",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_stepfunctions.Pass",
+                  "version": "2.45.0"
+                }
+              },
+              "MapToArrayTask": {
+                "id": "MapToArrayTask",
+                "path": "testStack/Put/MapToArrayTask",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_stepfunctions.Pass",
+                  "version": "2.45.0"
+                }
+              },
+              "ApplyAttributePropertiesTask": {
+                "id": "ApplyAttributePropertiesTask",
+                "path": "testStack/Put/ApplyAttributePropertiesTask",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_stepfunctions.Pass",
+                  "version": "2.45.0"
+                }
+              },
+              "GetDataAsArrayTask": {
+                "id": "GetDataAsArrayTask",
+                "path": "testStack/Put/GetDataAsArrayTask",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_stepfunctions.Pass",
+                  "version": "2.45.0"
+                }
+              },
+              "SeparateFromPlaceholderTask": {
+                "id": "SeparateFromPlaceholderTask",
+                "path": "testStack/Put/SeparateFromPlaceholderTask",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_stepfunctions.Pass",
+                  "version": "2.45.0"
+                }
+              },
+              "GetAllTransformedDataAsArrayTaskpipipi": {
+                "id": "GetAllTransformedDataAsArrayTaskpipipi",
+                "path": "testStack/Put/GetAllTransformedDataAsArrayTaskpipipi",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_stepfunctions.Pass",
+                  "version": "2.45.0"
+                }
+              },
+              "KeepRelevantValueTask": {
+                "id": "KeepRelevantValueTask",
+                "path": "testStack/Put/KeepRelevantValueTask",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_stepfunctions.Pass",
+                  "version": "2.45.0"
+                }
+              },
+              "GetFirstItemTask": {
+                "id": "GetFirstItemTask",
+                "path": "testStack/Put/GetFirstItemTask",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_stepfunctions.Pass",
+                  "version": "2.45.0"
+                }
+              },
+              "PutItemTask": {
+                "id": "PutItemTask",
+                "path": "testStack/Put/PutItemTask",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_stepfunctions.CustomState",
+                  "version": "2.45.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "constructs.Construct",
+              "version": "10.1.124"
+            }
+          },
+          "StepFunction": {
+            "id": "StepFunction",
+            "path": "testStack/StepFunction",
+            "children": {
+              "Role": {
+                "id": "Role",
+                "path": "testStack/StepFunction/Role",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "testStack/StepFunction/Role/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": {
+                                  "Fn::FindInMap": [
+                                    "ServiceprincipalMap",
+                                    {
+                                      "Ref": "AWS::Region"
+                                    },
+                                    "states"
+                                  ]
+                                }
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.45.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.45.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "testStack/StepFunction/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::StepFunctions::StateMachine",
+                  "aws:cdk:cloudformation:props": {
+                    "roleArn": {
+                      "Fn::GetAtt": [
+                        "StepFunctionRoleEFA7D72E",
+                        "Arn"
+                      ]
+                    },
+                    "definitionString": "{\"StartAt\":\"GenerateUuidTask\",\"States\":{\"GenerateUuidTask\":{\"Type\":\"Pass\",\"Parameters\":{\"input.$\":\"$\",\"uuid.$\":\"States.UUID()\"},\"Next\":\"IntermediaryTask\"},\"IntermediaryTask\":{\"Type\":\"Pass\",\"Parameters\":{\"input.$\":\"$.input\",\"uuid.$\":\"$.uuid\",\"placeholderInputValues\":{\"type.$\":\"$.uuid\",\"id.$\":\"States.UUID()\",\"created\":\"placeholder\",\"modified\":\"placeholder\"}},\"Next\":\"MergeInputTask\"},\"MergeInputTask\":{\"Type\":\"Pass\",\"Parameters\":{\"uuid.$\":\"$.uuid\",\"data.$\":\"States.JsonMerge($.placeholderInputValues, $.input, false)\"},\"Next\":\"MapToArrayTask\"},\"MapToArrayTask\":{\"Type\":\"Pass\",\"Parameters\":{\"uuid.$\":\"$.uuid\",\"data\":{\"type.$\":\"States.Array($.data['type'])\",\"id.$\":\"States.Array($.data['id'])\",\"_ct.$\":\"States.Array($.data['created'])\",\"_md.$\":\"States.Array($.data['modified'])\"}},\"Next\":\"ApplyAttributePropertiesTask\"},\"ApplyAttributePropertiesTask\":{\"Type\":\"Pass\",\"Parameters\":{\"uuid.$\":\"$.uuid\",\"data\":{\"type\":{\"value\":[{\"S.$\":\"States.Format('{}', $.data.type[0])\"}],\"isPlaceholder.$\":\"States.ArrayContains($.data['type'], $.uuid)\",\"isNull.$\":\"States.ArrayContains($.data['type'], null)\",\"nullValue\":[null],\"null2Value\":[null],\"attributeMap\":\"type\"},\"id\":{\"value\":[{\"S.$\":\"States.Format('{}', $.data.id[0])\"}],\"isPlaceholder.$\":\"States.ArrayContains($.data['id'], $.uuid)\",\"isNull.$\":\"States.ArrayContains($.data['id'], null)\",\"nullValue\":[null],\"null2Value\":[null],\"attributeMap\":\"id\"},\"_ct\":{\"value\":[{\"S.$\":\"$$.State.EnteredTime\"}],\"isPlaceholder\":false,\"nullValue\":[null],\"attributeMap\":\"_ct\",\"isNull\":false},\"_md\":{\"value\":[{\"S.$\":\"$$.State.EnteredTime\"}],\"isPlaceholder\":false,\"nullValue\":[null],\"attributeMap\":\"_md\",\"isNull\":false}}},\"Next\":\"GetDataAsArrayTask\"},\"GetDataAsArrayTask\":{\"Type\":\"Pass\",\"Parameters\":{\"uuid.$\":\"$.uuid\",\"array.$\":\"States.Array($.data['type'],$.data['id'],$.data['_ct'],$.data['_md'])\"},\"Next\":\"SeparateFromPlaceholderTask\"},\"SeparateFromPlaceholderTask\":{\"Type\":\"Pass\",\"Parameters\":{\"uuid.$\":\"$.uuid\",\"arrays\":{\"type.placeholder\":{\"value.$\":\"$.array[?(@.attributeMap=='type' && @.isPlaceholder == true)].nullValue\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='type' && @.isPlaceholder == true)].nullValue)\",\"attributeMap\":\"type\"},\"type.null\":{\"value.$\":\"$.array[?(@.attributeMap=='type' && @.isNull == true)].null2Value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='type' && @.isNull == true)].null2Value)\",\"attributeMap\":\"type\"},\"type.input\":{\"value.$\":\"$.array[?(@.attributeMap=='type' && @.isPlaceholder == false && @.isNull == false)].value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='type' && @.isPlaceholder == false && @.isNull == false)].value)\",\"attributeMap\":\"type\"},\"id.placeholder\":{\"value.$\":\"$.array[?(@.attributeMap=='id' && @.isPlaceholder == true)].nullValue\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='id' && @.isPlaceholder == true)].nullValue)\",\"attributeMap\":\"id\"},\"id.null\":{\"value.$\":\"$.array[?(@.attributeMap=='id' && @.isNull == true)].null2Value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='id' && @.isNull == true)].null2Value)\",\"attributeMap\":\"id\"},\"id.input\":{\"value.$\":\"$.array[?(@.attributeMap=='id' && @.isPlaceholder == false && @.isNull == false)].value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='id' && @.isPlaceholder == false && @.isNull == false)].value)\",\"attributeMap\":\"id\"},\"_ct.placeholder\":{\"value.$\":\"$.array[?(@.attributeMap=='_ct' && @.isPlaceholder == true)].nullValue\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='_ct' && @.isPlaceholder == true)].nullValue)\",\"attributeMap\":\"_ct\"},\"_ct.null\":{\"value.$\":\"$.array[?(@.attributeMap=='_ct' && @.isNull == true)].null2Value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='_ct' && @.isNull == true)].null2Value)\",\"attributeMap\":\"_ct\"},\"_ct.input\":{\"value.$\":\"$.array[?(@.attributeMap=='_ct' && @.isPlaceholder == false && @.isNull == false)].value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='_ct' && @.isPlaceholder == false && @.isNull == false)].value)\",\"attributeMap\":\"_ct\"},\"_md.placeholder\":{\"value.$\":\"$.array[?(@.attributeMap=='_md' && @.isPlaceholder == true)].nullValue\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='_md' && @.isPlaceholder == true)].nullValue)\",\"attributeMap\":\"_md\"},\"_md.null\":{\"value.$\":\"$.array[?(@.attributeMap=='_md' && @.isNull == true)].null2Value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='_md' && @.isNull == true)].null2Value)\",\"attributeMap\":\"_md\"},\"_md.input\":{\"value.$\":\"$.array[?(@.attributeMap=='_md' && @.isPlaceholder == false && @.isNull == false)].value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='_md' && @.isPlaceholder == false && @.isNull == false)].value)\",\"attributeMap\":\"_md\"}}},\"Next\":\"GetAllTransformedDataAsArrayTaskpipipi\"},\"GetAllTransformedDataAsArrayTaskpipipi\":{\"Type\":\"Pass\",\"Parameters\":{\"uuid.$\":\"$.uuid\",\"arrays.$\":\"States.Array($.arrays['type.placeholder'], $.arrays['type.input'], $.arrays['type.null'], $.arrays['id.placeholder'], $.arrays['id.input'], $.arrays['id.null'], $.arrays['_ct.placeholder'], $.arrays['_ct.input'], $.arrays['_ct.null'], $.arrays['_md.placeholder'], $.arrays['_md.input'], $.arrays['_md.null'] )\"},\"Next\":\"KeepRelevantValueTask\"},\"KeepRelevantValueTask\":{\"Type\":\"Pass\",\"Parameters\":{\"object\":{\"type.$\":\"$..arrays[?(@.attributeMap=='type' && @.length == 1)].value[0]\",\"id.$\":\"$..arrays[?(@.attributeMap=='id' && @.length == 1)].value[0]\",\"_ct.$\":\"$..arrays[?(@.attributeMap=='_ct' && @.length == 1)].value[0]\",\"_md.$\":\"$..arrays[?(@.attributeMap=='_md' && @.length == 1)].value[0]\"}},\"Next\":\"GetFirstItemTask\"},\"GetFirstItemTask\":{\"Type\":\"Pass\",\"Parameters\":{\"object\":{\"type.$\":\"$.object.type[0][0]\",\"id.$\":\"$.object.id[0][0]\",\"_ct.$\":\"$.object._ct[0][0]\",\"_md.$\":\"$.object._md[0][0]\"}},\"Next\":\"PutItemTask\"},\"PutItemTask\":{\"Next\":\"SuccessTask\",\"Type\":\"Task\",\"Resource\":\"arn:aws:states:::dynamodb:putItem\",\"Parameters\":{\"TableName\":\"Test\",\"Item.$\":\"$.object\"},\"ResultPath\":null},\"SuccessTask\":{\"Type\":\"Succeed\"}}}",
+                    "stateMachineName": "SaveAnimalStepFunction2",
+                    "stateMachineType": "EXPRESS"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_stepfunctions.CfnStateMachine",
+                  "version": "2.45.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_stepfunctions.StateMachine",
+              "version": "2.45.0"
+            }
+          },
+          "Service-principalMap": {
+            "id": "Service-principalMap",
+            "path": "testStack/Service-principalMap",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnMapping",
+              "version": "2.45.0"
+            }
+          },
+          "Exports": {
+            "id": "Exports",
+            "path": "testStack/Exports",
+            "children": {
+              "Output{\"Ref\":\"LambdaPutItemD842CCEC\"}": {
+                "id": "Output{\"Ref\":\"LambdaPutItemD842CCEC\"}",
+                "path": "testStack/Exports/Output{\"Ref\":\"LambdaPutItemD842CCEC\"}",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnOutput",
+                  "version": "2.45.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "constructs.Construct",
+              "version": "10.1.124"
+            }
+          }
+        },
+        "constructInfo": {
+          "fqn": "aws-cdk-lib.Stack",
+          "version": "2.45.0"
+        }
+      },
+      "SuccessTask": {
+        "id": "SuccessTask",
+        "path": "SuccessTask",
+        "constructInfo": {
+          "fqn": "aws-cdk-lib.aws_stepfunctions.Succeed",
+          "version": "2.45.0"
+        }
+      },
+      "testCase": {
+        "id": "testCase",
+        "path": "testCase",
+        "children": {
+          "DefaultTest": {
+            "id": "DefaultTest",
+            "path": "testCase/DefaultTest",
+            "children": {
+              "Default": {
+                "id": "Default",
+                "path": "testCase/DefaultTest/Default",
+                "constructInfo": {
+                  "fqn": "constructs.Construct",
+                  "version": "10.1.124"
+                }
+              },
+              "DeployAssert": {
+                "id": "DeployAssert",
+                "path": "testCase/DefaultTest/DeployAssert",
+                "children": {
+                  "LambdaInvokeeb52d93bd6f960de0fe9b61d1ed24eca": {
+                    "id": "LambdaInvokeeb52d93bd6f960de0fe9b61d1ed24eca",
+                    "path": "testCase/DefaultTest/DeployAssert/LambdaInvokeeb52d93bd6f960de0fe9b61d1ed24eca",
+                    "children": {
+                      "SdkProvider": {
+                        "id": "SdkProvider",
+                        "path": "testCase/DefaultTest/DeployAssert/LambdaInvokeeb52d93bd6f960de0fe9b61d1ed24eca/SdkProvider",
+                        "children": {
+                          "AssertionsProvider": {
+                            "id": "AssertionsProvider",
+                            "path": "testCase/DefaultTest/DeployAssert/LambdaInvokeeb52d93bd6f960de0fe9b61d1ed24eca/SdkProvider/AssertionsProvider",
+                            "constructInfo": {
+                              "fqn": "constructs.Construct",
+                              "version": "10.1.124"
+                            }
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "@aws-cdk/integ-tests-alpha.AssertionsProvider",
+                          "version": "2.45.0-alpha.0"
+                        }
+                      },
+                      "Default": {
+                        "id": "Default",
+                        "path": "testCase/DefaultTest/DeployAssert/LambdaInvokeeb52d93bd6f960de0fe9b61d1ed24eca/Default",
+                        "children": {
+                          "Default": {
+                            "id": "Default",
+                            "path": "testCase/DefaultTest/DeployAssert/LambdaInvokeeb52d93bd6f960de0fe9b61d1ed24eca/Default/Default",
+                            "constructInfo": {
+                              "fqn": "aws-cdk-lib.CfnResource",
+                              "version": "2.45.0"
+                            }
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.CustomResource",
+                          "version": "2.45.0"
+                        }
+                      },
+                      "Invoke": {
+                        "id": "Invoke",
+                        "path": "testCase/DefaultTest/DeployAssert/LambdaInvokeeb52d93bd6f960de0fe9b61d1ed24eca/Invoke",
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.CfnResource",
+                          "version": "2.45.0"
+                        }
+                      },
+                      "AssertionResults": {
+                        "id": "AssertionResults",
+                        "path": "testCase/DefaultTest/DeployAssert/LambdaInvokeeb52d93bd6f960de0fe9b61d1ed24eca/AssertionResults",
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.CfnOutput",
+                          "version": "2.45.0"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "@aws-cdk/integ-tests-alpha.LambdaInvokeFunction",
+                      "version": "2.45.0-alpha.0"
+                    }
+                  },
+                  "SingletonFunction1488541a7b23466481b69b4408076b81": {
+                    "id": "SingletonFunction1488541a7b23466481b69b4408076b81",
+                    "path": "testCase/DefaultTest/DeployAssert/SingletonFunction1488541a7b23466481b69b4408076b81",
+                    "children": {
+                      "Staging": {
+                        "id": "Staging",
+                        "path": "testCase/DefaultTest/DeployAssert/SingletonFunction1488541a7b23466481b69b4408076b81/Staging",
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.AssetStaging",
+                          "version": "2.45.0"
+                        }
+                      },
+                      "Role": {
+                        "id": "Role",
+                        "path": "testCase/DefaultTest/DeployAssert/SingletonFunction1488541a7b23466481b69b4408076b81/Role",
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.CfnResource",
+                          "version": "2.45.0"
+                        }
+                      },
+                      "Handler": {
+                        "id": "Handler",
+                        "path": "testCase/DefaultTest/DeployAssert/SingletonFunction1488541a7b23466481b69b4408076b81/Handler",
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.CfnResource",
+                          "version": "2.45.0"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "constructs.Construct",
+                      "version": "10.1.124"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.Stack",
+                  "version": "2.45.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "@aws-cdk/integ-tests-alpha.IntegTestCase",
+              "version": "2.45.0-alpha.0"
+            }
+          }
+        },
+        "constructInfo": {
+          "fqn": "@aws-cdk/integ-tests-alpha.IntegTest",
+          "version": "2.45.0-alpha.0"
+        }
+      }
+    },
+    "constructInfo": {
+      "fqn": "aws-cdk-lib.App",
+      "version": "2.45.0"
+    }
+  }
+}

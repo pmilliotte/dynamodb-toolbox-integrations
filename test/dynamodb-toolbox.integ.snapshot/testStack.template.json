@@ -1,0 +1,285 @@
+{
+ "Resources": {
+  "BigTableE7B4B4BA": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "KeySchema": [
+     {
+      "AttributeName": "type",
+      "KeyType": "HASH"
+     },
+     {
+      "AttributeName": "id",
+      "KeyType": "RANGE"
+     }
+    ],
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "type",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "id",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "TableName": "Test"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete"
+  },
+  "DynamodbPutF372CD0B": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   }
+  },
+  "DynamodbPutDefaultPolicy4DFD3824": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "dynamodb:PutItem",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "BigTableE7B4B4BA",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "DynamodbPutDefaultPolicy4DFD3824",
+    "Roles": [
+     {
+      "Ref": "DynamodbPutF372CD0B"
+     }
+    ]
+   }
+  },
+  "LambdaPutItemD842CCEC": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "842e0f6019078d4c0e7ce163cb38da5f11279ccd69de80841aadc2b18229ac15.zip"
+    },
+    "Role": {
+     "Fn::GetAtt": [
+      "DynamodbPutF372CD0B",
+      "Arn"
+     ]
+    },
+    "Environment": {
+     "Variables": {
+      "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1"
+     }
+    },
+    "FunctionName": "Putitemlambda",
+    "Handler": "index.main",
+    "Runtime": "nodejs14.x"
+   },
+   "DependsOn": [
+    "DynamodbPutDefaultPolicy4DFD3824",
+    "DynamodbPutF372CD0B"
+   ]
+  },
+  "StepFunctionRoleEFA7D72E": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": {
+         "Fn::FindInMap": [
+          "ServiceprincipalMap",
+          {
+           "Ref": "AWS::Region"
+          },
+          "states"
+         ]
+        }
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   }
+  },
+  "StepFunction1F935F84": {
+   "Type": "AWS::StepFunctions::StateMachine",
+   "Properties": {
+    "RoleArn": {
+     "Fn::GetAtt": [
+      "StepFunctionRoleEFA7D72E",
+      "Arn"
+     ]
+    },
+    "DefinitionString": "{\"StartAt\":\"GenerateUuidTask\",\"States\":{\"GenerateUuidTask\":{\"Type\":\"Pass\",\"Parameters\":{\"input.$\":\"$\",\"uuid.$\":\"States.UUID()\"},\"Next\":\"IntermediaryTask\"},\"IntermediaryTask\":{\"Type\":\"Pass\",\"Parameters\":{\"input.$\":\"$.input\",\"uuid.$\":\"$.uuid\",\"placeholderInputValues\":{\"type.$\":\"$.uuid\",\"id.$\":\"States.UUID()\",\"created\":\"placeholder\",\"modified\":\"placeholder\"}},\"Next\":\"MergeInputTask\"},\"MergeInputTask\":{\"Type\":\"Pass\",\"Parameters\":{\"uuid.$\":\"$.uuid\",\"data.$\":\"States.JsonMerge($.placeholderInputValues, $.input, false)\"},\"Next\":\"MapToArrayTask\"},\"MapToArrayTask\":{\"Type\":\"Pass\",\"Parameters\":{\"uuid.$\":\"$.uuid\",\"data\":{\"type.$\":\"States.Array($.data['type'])\",\"id.$\":\"States.Array($.data['id'])\",\"_ct.$\":\"States.Array($.data['created'])\",\"_md.$\":\"States.Array($.data['modified'])\"}},\"Next\":\"ApplyAttributePropertiesTask\"},\"ApplyAttributePropertiesTask\":{\"Type\":\"Pass\",\"Parameters\":{\"uuid.$\":\"$.uuid\",\"data\":{\"type\":{\"value\":[{\"S.$\":\"States.Format('{}', $.data.type[0])\"}],\"isPlaceholder.$\":\"States.ArrayContains($.data['type'], $.uuid)\",\"isNull.$\":\"States.ArrayContains($.data['type'], null)\",\"nullValue\":[null],\"null2Value\":[null],\"attributeMap\":\"type\"},\"id\":{\"value\":[{\"S.$\":\"States.Format('{}', $.data.id[0])\"}],\"isPlaceholder.$\":\"States.ArrayContains($.data['id'], $.uuid)\",\"isNull.$\":\"States.ArrayContains($.data['id'], null)\",\"nullValue\":[null],\"null2Value\":[null],\"attributeMap\":\"id\"},\"_ct\":{\"value\":[{\"S.$\":\"$$.State.EnteredTime\"}],\"isPlaceholder\":false,\"nullValue\":[null],\"attributeMap\":\"_ct\",\"isNull\":false},\"_md\":{\"value\":[{\"S.$\":\"$$.State.EnteredTime\"}],\"isPlaceholder\":false,\"nullValue\":[null],\"attributeMap\":\"_md\",\"isNull\":false}}},\"Next\":\"GetDataAsArrayTask\"},\"GetDataAsArrayTask\":{\"Type\":\"Pass\",\"Parameters\":{\"uuid.$\":\"$.uuid\",\"array.$\":\"States.Array($.data['type'],$.data['id'],$.data['_ct'],$.data['_md'])\"},\"Next\":\"SeparateFromPlaceholderTask\"},\"SeparateFromPlaceholderTask\":{\"Type\":\"Pass\",\"Parameters\":{\"uuid.$\":\"$.uuid\",\"arrays\":{\"type.placeholder\":{\"value.$\":\"$.array[?(@.attributeMap=='type' && @.isPlaceholder == true)].nullValue\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='type' && @.isPlaceholder == true)].nullValue)\",\"attributeMap\":\"type\"},\"type.null\":{\"value.$\":\"$.array[?(@.attributeMap=='type' && @.isNull == true)].null2Value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='type' && @.isNull == true)].null2Value)\",\"attributeMap\":\"type\"},\"type.input\":{\"value.$\":\"$.array[?(@.attributeMap=='type' && @.isPlaceholder == false && @.isNull == false)].value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='type' && @.isPlaceholder == false && @.isNull == false)].value)\",\"attributeMap\":\"type\"},\"id.placeholder\":{\"value.$\":\"$.array[?(@.attributeMap=='id' && @.isPlaceholder == true)].nullValue\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='id' && @.isPlaceholder == true)].nullValue)\",\"attributeMap\":\"id\"},\"id.null\":{\"value.$\":\"$.array[?(@.attributeMap=='id' && @.isNull == true)].null2Value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='id' && @.isNull == true)].null2Value)\",\"attributeMap\":\"id\"},\"id.input\":{\"value.$\":\"$.array[?(@.attributeMap=='id' && @.isPlaceholder == false && @.isNull == false)].value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='id' && @.isPlaceholder == false && @.isNull == false)].value)\",\"attributeMap\":\"id\"},\"_ct.placeholder\":{\"value.$\":\"$.array[?(@.attributeMap=='_ct' && @.isPlaceholder == true)].nullValue\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='_ct' && @.isPlaceholder == true)].nullValue)\",\"attributeMap\":\"_ct\"},\"_ct.null\":{\"value.$\":\"$.array[?(@.attributeMap=='_ct' && @.isNull == true)].null2Value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='_ct' && @.isNull == true)].null2Value)\",\"attributeMap\":\"_ct\"},\"_ct.input\":{\"value.$\":\"$.array[?(@.attributeMap=='_ct' && @.isPlaceholder == false && @.isNull == false)].value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='_ct' && @.isPlaceholder == false && @.isNull == false)].value)\",\"attributeMap\":\"_ct\"},\"_md.placeholder\":{\"value.$\":\"$.array[?(@.attributeMap=='_md' && @.isPlaceholder == true)].nullValue\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='_md' && @.isPlaceholder == true)].nullValue)\",\"attributeMap\":\"_md\"},\"_md.null\":{\"value.$\":\"$.array[?(@.attributeMap=='_md' && @.isNull == true)].null2Value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='_md' && @.isNull == true)].null2Value)\",\"attributeMap\":\"_md\"},\"_md.input\":{\"value.$\":\"$.array[?(@.attributeMap=='_md' && @.isPlaceholder == false && @.isNull == false)].value\",\"length.$\":\"States.ArrayLength($.array[?(@.attributeMap=='_md' && @.isPlaceholder == false && @.isNull == false)].value)\",\"attributeMap\":\"_md\"}}},\"Next\":\"GetAllTransformedDataAsArrayTaskpipipi\"},\"GetAllTransformedDataAsArrayTaskpipipi\":{\"Type\":\"Pass\",\"Parameters\":{\"uuid.$\":\"$.uuid\",\"arrays.$\":\"States.Array($.arrays['type.placeholder'], $.arrays['type.input'], $.arrays['type.null'], $.arrays['id.placeholder'], $.arrays['id.input'], $.arrays['id.null'], $.arrays['_ct.placeholder'], $.arrays['_ct.input'], $.arrays['_ct.null'], $.arrays['_md.placeholder'], $.arrays['_md.input'], $.arrays['_md.null'] )\"},\"Next\":\"KeepRelevantValueTask\"},\"KeepRelevantValueTask\":{\"Type\":\"Pass\",\"Parameters\":{\"object\":{\"type.$\":\"$..arrays[?(@.attributeMap=='type' && @.length == 1)].value[0]\",\"id.$\":\"$..arrays[?(@.attributeMap=='id' && @.length == 1)].value[0]\",\"_ct.$\":\"$..arrays[?(@.attributeMap=='_ct' && @.length == 1)].value[0]\",\"_md.$\":\"$..arrays[?(@.attributeMap=='_md' && @.length == 1)].value[0]\"}},\"Next\":\"GetFirstItemTask\"},\"GetFirstItemTask\":{\"Type\":\"Pass\",\"Parameters\":{\"object\":{\"type.$\":\"$.object.type[0][0]\",\"id.$\":\"$.object.id[0][0]\",\"_ct.$\":\"$.object._ct[0][0]\",\"_md.$\":\"$.object._md[0][0]\"}},\"Next\":\"PutItemTask\"},\"PutItemTask\":{\"Next\":\"SuccessTask\",\"Type\":\"Task\",\"Resource\":\"arn:aws:states:::dynamodb:putItem\",\"Parameters\":{\"TableName\":\"Test\",\"Item.$\":\"$.object\"},\"ResultPath\":null},\"SuccessTask\":{\"Type\":\"Succeed\"}}}",
+    "StateMachineName": "SaveAnimalStepFunction2",
+    "StateMachineType": "EXPRESS"
+   },
+   "DependsOn": [
+    "StepFunctionRoleEFA7D72E"
+   ]
+  }
+ },
+ "Mappings": {
+  "ServiceprincipalMap": {
+   "af-south-1": {
+    "states": "states.af-south-1.amazonaws.com"
+   },
+   "ap-east-1": {
+    "states": "states.ap-east-1.amazonaws.com"
+   },
+   "ap-northeast-1": {
+    "states": "states.ap-northeast-1.amazonaws.com"
+   },
+   "ap-northeast-2": {
+    "states": "states.ap-northeast-2.amazonaws.com"
+   },
+   "ap-northeast-3": {
+    "states": "states.ap-northeast-3.amazonaws.com"
+   },
+   "ap-south-1": {
+    "states": "states.ap-south-1.amazonaws.com"
+   },
+   "ap-southeast-1": {
+    "states": "states.ap-southeast-1.amazonaws.com"
+   },
+   "ap-southeast-2": {
+    "states": "states.ap-southeast-2.amazonaws.com"
+   },
+   "ap-southeast-3": {
+    "states": "states.ap-southeast-3.amazonaws.com"
+   },
+   "ca-central-1": {
+    "states": "states.ca-central-1.amazonaws.com"
+   },
+   "cn-north-1": {
+    "states": "states.cn-north-1.amazonaws.com"
+   },
+   "cn-northwest-1": {
+    "states": "states.cn-northwest-1.amazonaws.com"
+   },
+   "eu-central-1": {
+    "states": "states.eu-central-1.amazonaws.com"
+   },
+   "eu-north-1": {
+    "states": "states.eu-north-1.amazonaws.com"
+   },
+   "eu-south-1": {
+    "states": "states.eu-south-1.amazonaws.com"
+   },
+   "eu-south-2": {
+    "states": "states.eu-south-2.amazonaws.com"
+   },
+   "eu-west-1": {
+    "states": "states.eu-west-1.amazonaws.com"
+   },
+   "eu-west-2": {
+    "states": "states.eu-west-2.amazonaws.com"
+   },
+   "eu-west-3": {
+    "states": "states.eu-west-3.amazonaws.com"
+   },
+   "me-south-1": {
+    "states": "states.me-south-1.amazonaws.com"
+   },
+   "sa-east-1": {
+    "states": "states.sa-east-1.amazonaws.com"
+   },
+   "us-east-1": {
+    "states": "states.us-east-1.amazonaws.com"
+   },
+   "us-east-2": {
+    "states": "states.us-east-2.amazonaws.com"
+   },
+   "us-gov-east-1": {
+    "states": "states.us-gov-east-1.amazonaws.com"
+   },
+   "us-gov-west-1": {
+    "states": "states.us-gov-west-1.amazonaws.com"
+   },
+   "us-iso-east-1": {
+    "states": "states.amazonaws.com"
+   },
+   "us-iso-west-1": {
+    "states": "states.amazonaws.com"
+   },
+   "us-isob-east-1": {
+    "states": "states.amazonaws.com"
+   },
+   "us-west-1": {
+    "states": "states.us-west-1.amazonaws.com"
+   },
+   "us-west-2": {
+    "states": "states.us-west-2.amazonaws.com"
+   }
+  }
+ },
+ "Outputs": {
+  "ExportsOutputRefLambdaPutItemD842CCEC01216198": {
+   "Value": {
+    "Ref": "LambdaPutItemD842CCEC"
+   },
+   "Export": {
+    "Name": "testStack:ExportsOutputRefLambdaPutItemD842CCEC01216198"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
