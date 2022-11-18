@@ -4,6 +4,7 @@ import { Entity } from "../types";
 import { applyAttributeProperties } from "../utils/applyAttributeProperties";
 import { getAllTransformedDataAsArray } from "../utils/getAllTransformedDataAsArray";
 import { getDataAsArray } from "../utils/getDataAsArray";
+import { getDefaultValues } from "../utils/getDefaultValues";
 import { getFirstItem } from "../utils/getFirstItem";
 import { getPlaceholderInputValues } from "../utils/getPlaceholderInputValues";
 import { keepRelevantValue } from "../utils/keepRelevantValue";
@@ -24,30 +25,31 @@ export class DynamodbToolboxPutItem extends Construct {
   ) {
     super(scope, id);
 
-    const generateUuid = new Pass(this, "GenerateUuidTask", {
+    const generateUuidTask = new Pass(this, "GetDefaultValues", {
       parameters: {
         // To be changed with inputPath
         "input.$": "$",
         "uuid.$": "States.UUID()",
+        defaultValues: getDefaultValues(entity),
       },
     });
 
-    const getNullInputValuesTask = new Pass(this, "IntermediaryTask", {
+    const getNullInputValuesTask = new Pass(this, "CreatePlaceholderWithUuid", {
       parameters: {
-        "input.$": "$.input",
+        "input.$": "States.JsonMerge($.defaultValues, $.input, false)",
         "uuid.$": "$.uuid",
         placeholderInputValues: getPlaceholderInputValues(entity),
       },
     });
 
-    const mergeInputTask = new Pass(this, "MergeInputTask", {
+    const mergeInputTask = new Pass(this, "MergeObjects", {
       parameters: {
         "uuid.$": "$.uuid",
         "data.$": "States.JsonMerge($.placeholderInputValues, $.input, false)",
       },
     });
 
-    const mapToArrayTask = new Pass(this, "MapToArrayTask", {
+    const mapToArrayTask = new Pass(this, "MapToArray", {
       parameters: {
         "uuid.$": "$.uuid",
         data: mapToArray(entity),
@@ -56,7 +58,7 @@ export class DynamodbToolboxPutItem extends Construct {
 
     const applyAttributePropertiesTask = new Pass(
       this,
-      "ApplyAttributePropertiesTask",
+      "ApplyDynamodbToolboxEntityProperties",
       {
         parameters: {
           "uuid.$": "$.uuid",
@@ -65,7 +67,7 @@ export class DynamodbToolboxPutItem extends Construct {
       }
     );
 
-    const getDataAsArrayTask = new Pass(this, "GetDataAsArrayTask", {
+    const getDataAsArrayTask = new Pass(this, "GetDataAsArray", {
       parameters: {
         "uuid.$": "$.uuid",
         "array.$": getDataAsArray(entity),
@@ -74,7 +76,7 @@ export class DynamodbToolboxPutItem extends Construct {
 
     const separateFromPlaceholderTask = new Pass(
       this,
-      "SeparateFromPlaceholderTask",
+      "SeparateFromPlaceholder",
       {
         parameters: {
           "uuid.$": "$.uuid",
@@ -85,7 +87,7 @@ export class DynamodbToolboxPutItem extends Construct {
 
     const getAllTransformedDataAsArrayTask = new Pass(
       this,
-      "GetAllTransformedDataAsArrayTask",
+      "GetAllTransformedDataAsArray",
       {
         parameters: {
           "uuid.$": "$.uuid",
@@ -94,19 +96,19 @@ export class DynamodbToolboxPutItem extends Construct {
       }
     );
 
-    const keepRelevantValueTask = new Pass(this, "KeepRelevantValueTask", {
+    const keepRelevantValueTask = new Pass(this, "KeepRelevantValue", {
       parameters: {
         object: keepRelevantValue(entity),
       },
     });
 
-    const getFirstItemTask = new Pass(this, "GetFirstItemTask", {
+    const getFirstItemTask = new Pass(this, "GetFirstItem", {
       parameters: {
         object: getFirstItem(entity),
       },
     });
 
-    const putItemTask = new CustomState(this, "PutItemTask", {
+    const putItemTask = new CustomState(this, "PutItem", {
       stateJson: {
         Type: "Task",
         Resource: "arn:aws:states:::dynamodb:putItem",
@@ -118,7 +120,7 @@ export class DynamodbToolboxPutItem extends Construct {
       },
     });
 
-    this.chain = generateUuid
+    this.chain = generateUuidTask
       .next(getNullInputValuesTask)
       .next(mergeInputTask)
       .next(mapToArrayTask)
