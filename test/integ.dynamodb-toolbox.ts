@@ -6,8 +6,7 @@ import {
   Succeed,
 } from "aws-cdk-lib/aws-stepfunctions";
 import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
-import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
-import * as path from "path";
+import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { DynamodbToolboxPutItem } from "../lib";
 import {
   ExpectedResult,
@@ -15,54 +14,47 @@ import {
   InvocationType,
   LogType,
 } from "@aws-cdk/integ-tests-alpha";
-import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import { PutItemConstruct } from "./PutItem/PutItemConstruct";
 
 const app = new App();
 
 class TestStack extends Stack {
   public functionName: string;
-
   constructor(scope: App, id: string) {
     super(scope, id);
 
-    const testTable = new Table(this, "BigTable", {
+    const { tableArn } = new Table(this, "BigTable", {
       partitionKey: { name: "type", type: AttributeType.STRING },
-      sortKey: { name: "id", type: AttributeType.STRING },
+      sortKey: { name: "name", type: AttributeType.STRING },
       tableName: "Test",
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
     });
-
-    // // Put item lambda
-    const lambdaPutItemRole = new Role(this, "DynamodbPut", {
-      assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
-    });
-    lambdaPutItemRole.addToPolicy(
-      new PolicyStatement({
-        actions: ["dynamodb:PutItem"],
-        resources: [testTable.tableArn],
-      })
-    );
-
-    const { functionName } = new NodejsFunction(this, "LambdaPutItem", {
-      functionName: "Putitemlambda",
-      handler: "main",
-      entry: path.join(__dirname, `/functions/putItem.ts`),
-      role: lambdaPutItemRole,
-    });
-
-    this.functionName = functionName;
 
     const { chain } = new DynamodbToolboxPutItem(this, `Put`, {
       // @ts-expect-error
       entity: TestEntity,
     });
 
-    new StateMachine(this, "StepFunction", {
+    const stateMachine = new StateMachine(this, "StepFunction", {
       stateMachineName: "SaveAnimalStepFunction2",
       definition: chain.next(new Succeed(scope, "SuccessTask")),
       stateMachineType: StateMachineType.EXPRESS,
     });
+    const { stateMachineArn } = stateMachine;
+
+    stateMachine.addToRolePolicy(
+      new PolicyStatement({
+        actions: ["dynamodb:PutItem"],
+        resources: [tableArn],
+      })
+    );
+
+    const { functionName } = new PutItemConstruct(this, "PutItemConstruct", {
+      tableArn,
+      stateMachineArn,
+    });
+    this.functionName = functionName;
   }
 }
 
@@ -72,13 +64,12 @@ const integ = new IntegTest(app, "testCase", {
   testCases: [testCase],
 });
 
-const invoke = integ.assertions.invokeFunction({
+const lambdaInvoke = integ.assertions.invokeFunction({
   functionName: testCase.functionName,
   invocationType: InvocationType.REQUEST_RESPONE,
   logType: LogType.NONE,
-  payload: JSON.stringify({ type: "Hello" }),
 });
 
-invoke.expect(ExpectedResult.objectLike({ Payload: "ok" }));
+lambdaInvoke.expect(ExpectedResult.objectLike({ Payload: "false" }));
 
 app.synth();

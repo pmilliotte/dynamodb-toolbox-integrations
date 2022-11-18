@@ -6,6 +6,6 @@ const documentClient = new DocumentClient({ region: "eu-west-1" });
 export const TestTable = new Table({
   name: "Test",
   partitionKey: "type",
-  sortKey: "id",
+  sortKey: "name",
   DocumentClient: documentClient,
 });
