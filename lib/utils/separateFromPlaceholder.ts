@@ -1,16 +1,11 @@
 import { Entity } from "../types";
+import { getAttributeMaps } from "./attributes";
 
 export const separateFromPlaceholder = (
   entity: Entity
 ): Record<string, string> => {
-  const { attributes } = entity.schema;
-
-  const params = Object.keys(
-    entity.attributes as Record<string, unknown>
-  ).reduce((temporaryParams, attributeKey) => {
-    const attributeMap = attributes[attributeKey].map ?? attributeKey;
-
-    return {
+  const params = getAttributeMaps(entity).reduce(
+    (temporaryParams, attributeMap) => ({
       ...temporaryParams,
       [`${attributeMap}.placeholder`]: {
         "value.$": `$.array[?(@.attributeMap=='${attributeMap}' && @.isPlaceholder == true)].nullValue`,
@@ -30,8 +25,9 @@ export const separateFromPlaceholder = (
         "length.$": `States.ArrayLength($.array[?(@.attributeMap=='${attributeMap}' && @.isPlaceholder == false && @.isNull == false)].value)`,
         attributeMap,
       },
-    };
-  }, {});
+    }),
+    {}
+  );
 
   return params;
 };

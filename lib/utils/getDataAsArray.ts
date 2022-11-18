@@ -1,21 +1,20 @@
 import { Entity } from "../types";
+import { getAttributeMaps } from "./attributes";
 
 export const getDataAsArray = (entity: Entity): string => {
-  const { attributes } = entity.schema;
-
   const string = "States.Array(";
-  let index = Object.keys(entity.attributes).length;
 
-  const params = Object.entries(
-    entity.attributes as Record<string, unknown>
-  ).reduce((temporaryParams, [attributeKey]) => {
-    index = index - 1;
-    const attributeMap = attributes[attributeKey].map ?? attributeKey;
+  const attributeMaps = getAttributeMaps(entity);
 
-    return temporaryParams.concat(
-      `$.data['${attributeMap}']${index === 0 ? "" : ","}`
-    );
-  }, string);
+  const params = attributeMaps.reduce(
+    (temporaryParams, attributeMap, index) =>
+      temporaryParams.concat(
+        `$.data['${attributeMap}']${
+          index === attributeMaps.length - 1 ? "" : ","
+        }`
+      ),
+    string
+  );
 
   return params.concat(")");
 };

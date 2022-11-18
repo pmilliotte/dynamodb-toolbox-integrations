@@ -1,18 +1,14 @@
 import { Entity } from "../types";
+import { getAttributeMaps } from "./attributes";
 
 export const getFirstItem = (entity: Entity): Record<string, string> => {
-  const { attributes } = entity.schema;
-
-  const params = Object.keys(
-    entity.attributes as Record<string, { type: string }>
-  ).reduce((temporaryParams, attributeKey) => {
-    const attributeMap = attributes[attributeKey].map ?? attributeKey;
-
-    return {
+  const params = getAttributeMaps(entity).reduce(
+    (temporaryParams, attributeMap) => ({
       ...temporaryParams,
       [`${attributeMap}.$`]: `$.object.${attributeMap}[0][0]`,
-    };
-  }, {});
+    }),
+    {}
+  );
 
   return params;
 };
