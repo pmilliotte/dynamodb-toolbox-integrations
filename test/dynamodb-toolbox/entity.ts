@@ -8,7 +8,7 @@ export const TestEntity = new Entity({
       partitionKey: true,
       type: "string",
     },
-    id: { sortKey: true, type: "string" },
+    name: { sortKey: true, type: "string" },
   },
   table: TestTable,
 });
