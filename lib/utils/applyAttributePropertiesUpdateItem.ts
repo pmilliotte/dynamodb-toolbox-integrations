@@ -1,12 +1,6 @@
 import { Entity } from "../types";
+import { TYPE_MAPPING } from "../types/Entity";
 import { DYNAMODB_TOOLBOX_GENERATED_ATTRIBUTE_ALIASES } from "./constants";
-
-const TYPE_MAPPING: Record<string, string> = {
-  string: "S",
-  number: "N",
-  boolean: "Bool",
-  map: "M",
-};
 
 export const applyAttributePropertiesUpdateItem = (
   entity: Entity
