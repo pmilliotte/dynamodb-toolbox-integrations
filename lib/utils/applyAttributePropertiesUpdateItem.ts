@@ -99,10 +99,3 @@ export const applyAttributePropertiesUpdateItem = (
 
   return params;
 };
-
-// {
-//   "type": "azert",
-//   "id": "123456789",
-//   "name": "Azure",
-//   "age": 7.22
-// }
