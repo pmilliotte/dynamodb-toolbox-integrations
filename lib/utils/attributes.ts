@@ -16,3 +16,15 @@ export const getAttributeAliases = (entity: Entity): string[] =>
         entity.schema.attributes[attributeKey].alias ?? attributeKey
     )
   );
+
+export const getKeyAliases = (entity: Entity) =>
+  uniq(
+    Object.keys(entity.schema.attributes).filter(
+      (attributeKey) =>
+        !!entity.schema.attributes[attributeKey].partitionKey ||
+        !!entity.schema.attributes[attributeKey].sortKey
+    )
+  ).map(
+    (attributeKey) =>
+      entity.schema.attributes[attributeKey].alias ?? attributeKey
+  );

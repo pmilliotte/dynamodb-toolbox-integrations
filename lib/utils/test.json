@@ -1,0 +1,19 @@
+{
+  "StartAt": "Get",
+  "States": {
+    "Get": {
+      "Next": "SuccessGet",
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:getItem",
+      "Parameters": { "Key": { "type.$": "$.type", "name.$": "$.name" } },
+      "ResultPath": null,
+      "ResultSelector": {
+        "result": {
+          "type.$": "$.[object Object]",
+          "name.$": "$.[object Object]"
+        }
+      }
+    },
+    "SuccessGet": { "Type": "Succeed" }
+  }
+}
