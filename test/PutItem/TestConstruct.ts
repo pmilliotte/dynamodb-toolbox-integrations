@@ -3,41 +3,39 @@ import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 import * as path from "path";
 
-type PutItemConstructProps = { tableArn: string; stateMachineArn: string };
+type PutItemTestProps = { tableArn: string; stateMachineArn: string };
 
-export class PutItemConstruct extends Construct {
+export class PutItemTest extends Construct {
   public functionName: string;
   constructor(
     scope: Construct,
     id: string,
-    { tableArn, stateMachineArn }: PutItemConstructProps
+    { tableArn, stateMachineArn }: PutItemTestProps
   ) {
     super(scope, id);
 
-    // // Put item lambda
-    const lambdaPutItemRole = new Role(this, "DynamodbPut", {
+    const role = new Role(this, "DynamodbPut", {
       assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
     });
-    lambdaPutItemRole.addToPolicy(
+    role.addToPolicy(
       new PolicyStatement({
         actions: ["dynamodb:PutItem", "dynamodb:GetItem"],
         resources: [tableArn],
       })
     );
-    lambdaPutItemRole.addToPolicy(
+    role.addToPolicy(
       new PolicyStatement({
         actions: ["states:StartSyncExecution"],
         resources: [stateMachineArn],
       })
     );
 
-    const { functionName } = new NodejsFunction(this, "LambdaPutItem", {
-      functionName: "Putitemlambda",
+    const { functionName } = new NodejsFunction(this, "PutItemTest", {
       handler: "main",
       // Get the file built
-      entry: path.join(__dirname, `/putItem.js`),
-      role: lambdaPutItemRole,
-      environment: { stateMachineArn: stateMachineArn },
+      entry: path.join(__dirname, `/handler.js`),
+      role,
+      environment: { stateMachineArn },
     });
     this.functionName = functionName;
   }

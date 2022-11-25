@@ -14,12 +14,12 @@ import {
   InvocationType,
   LogType,
 } from "@aws-cdk/integ-tests-alpha";
-import { PutItemConstruct } from "./PutItem/PutItemConstruct";
+import { PutItemTest } from "./PutItem/TestConstruct";
 
 const app = new App();
 
 class TestStack extends Stack {
-  public functionName: string;
+  public putItemTestName: string;
   constructor(scope: App, id: string) {
     super(scope, id);
 
@@ -37,8 +37,8 @@ class TestStack extends Stack {
     });
 
     const stateMachine = new StateMachine(this, "StepFunction", {
-      stateMachineName: "SaveAnimalStepFunction2",
       definition: chain.next(new Succeed(scope, "SuccessTask")),
+      // Express needed for future get sync
       stateMachineType: StateMachineType.EXPRESS,
     });
     const { stateMachineArn } = stateMachine;
@@ -50,11 +50,11 @@ class TestStack extends Stack {
       })
     );
 
-    const { functionName } = new PutItemConstruct(this, "PutItemConstruct", {
+    const putItemTest = new PutItemTest(this, "PutItemTest", {
       tableArn,
       stateMachineArn,
     });
-    this.functionName = functionName;
+    this.putItemTestName = putItemTest.functionName;
   }
 }
 
@@ -65,11 +65,11 @@ const integ = new IntegTest(app, "testCase", {
 });
 
 const lambdaInvoke = integ.assertions.invokeFunction({
-  functionName: testCase.functionName,
+  functionName: testCase.putItemTestName,
   invocationType: InvocationType.REQUEST_RESPONE,
   logType: LogType.NONE,
 });
 
-lambdaInvoke.expect(ExpectedResult.objectLike({ Payload: "false" }));
+lambdaInvoke.expect(ExpectedResult.objectLike({ Payload: "\"\"" }));
 
 app.synth();
