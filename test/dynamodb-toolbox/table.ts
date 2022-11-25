@@ -8,4 +8,5 @@ export const TestTable = new Table({
   partitionKey: "type",
   sortKey: "name",
   DocumentClient: documentClient,
+  // removeNullAttributes: false,
 });
