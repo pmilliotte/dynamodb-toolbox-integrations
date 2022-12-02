@@ -15,11 +15,13 @@ import {
   LogType,
 } from "@aws-cdk/integ-tests-alpha";
 import { PutItemTest } from "./PutItem/TestConstruct";
+import { UpdateItemTestConstruct } from "./UpdateItem/UpdateItemTestConstruct";
 
 const app = new App();
 
 class TestStack extends Stack {
   public putItemTestName: string;
+  public updateItemTestLambdaName: string;
   constructor(scope: App, id: string) {
     super(scope, id);
 
@@ -55,6 +57,13 @@ class TestStack extends Stack {
       stateMachineArn,
     });
     this.putItemTestName = putItemTest.functionName;
+
+    const { updateItemTestLambdaName } = new UpdateItemTestConstruct(
+      this,
+      "UpdateItemTest",
+      { tableArn }
+    );
+    this.updateItemTestLambdaName = updateItemTestLambdaName;
   }
 }
 
@@ -64,12 +73,20 @@ const integ = new IntegTest(app, "testCase", {
   testCases: [testCase],
 });
 
-const lambdaInvoke = integ.assertions.invokeFunction({
+const putItemLambdaInvoke = integ.assertions.invokeFunction({
   functionName: testCase.putItemTestName,
   invocationType: InvocationType.REQUEST_RESPONE,
   logType: LogType.NONE,
 });
 
-lambdaInvoke.expect(ExpectedResult.objectLike({ Payload: "\"\"" }));
+putItemLambdaInvoke.expect(ExpectedResult.objectLike({ Payload: '""' }));
+
+const updateItemLambdaInvoke = integ.assertions.invokeFunction({
+  functionName: testCase.updateItemTestLambdaName,
+  invocationType: InvocationType.REQUEST_RESPONE,
+  logType: LogType.NONE,
+});
+
+updateItemLambdaInvoke.expect(ExpectedResult.objectLike({ Payload: '""' }));
 
 app.synth();
