@@ -38,7 +38,7 @@ This package only relates to entity definition based on `object` definitions.
 
 | DDB-toolbox attribute feature | GetItem | UpdateItem         | PutItem                               |
 | ----------------------------- | ------- | ------------------ | ------------------------------------- |
-| type                          | :x:     | :white_check_mark: | `string`, `number`, `boolean`         |
+| type                          | :x:     | `string`, `number` | `string`, `number`, `boolean`         |
 | coerce                        | :x:     | :x:                | :x:                                   |
 | default                       | :x:     | :x:                | :white_check_mark: for `static value` |
 | dependsOn                     | :x:     | :x:                | :x:                                   |

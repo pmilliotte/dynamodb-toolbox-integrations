@@ -9,7 +9,7 @@ export const updateItemEntityTest = new Entity({
       type: "string",
       prefix: "PK",
     },
-    id: { sortKey: true, type: "string", suffix: "SK" },
+    name: { sortKey: true, type: "string", suffix: "SK" },
     prefixField: { type: "string", required: true, prefix: "PREFIX" },
     suffixField: { type: "string", required: true, suffix: "SUFFIX" },
     prefixAndSuffixField: {
