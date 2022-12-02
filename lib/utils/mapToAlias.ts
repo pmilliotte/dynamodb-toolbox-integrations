@@ -10,7 +10,7 @@ export const mapToAlias = (entity: Entity): Record<string, unknown> => {
     const { type, map } = entity.schema.attributes[keyAlias];
     return {
       ...tempParams,
-      [`${keyAlias}.$`]: `$.Item.${map ?? keyAlias}.${TYPE_MAPPING[type]}`,
+      [`${keyAlias}.$`]: `$.output.${map ?? keyAlias}.${TYPE_MAPPING[type]}`,
     };
   }, {} as Record<string, unknown>);
 
