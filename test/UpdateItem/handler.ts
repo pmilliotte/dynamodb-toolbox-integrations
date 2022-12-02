@@ -15,28 +15,28 @@ const baseData = {
 
 export const main = async (): Promise<string> => {
   await updateItemEntityTest.put({
-    id: "lambdaHandled",
+    name: "lambdaHandled",
     ...baseData,
   });
 
   await updateItemEntityTest.put({
-    id: "id",
+    name: "stepFunctionHandled",
     ...baseData,
   });
 
   await updateItemEntityTest.update({
     ...input,
-    id: "lambdaHandled",
+    name: "lambdaHandled",
   });
 
   const { Item: item1 } = await updateItemEntityTest.get({
     type: "updateItemEntityTest",
-    id: "lambdaHandled",
+    name: "lambdaHandled",
   });
 
   const sfnCommand = new StartSyncExecutionCommand({
     input: JSON.stringify({
-      name: "name2",
+      name: "stepFunctionHandled",
       ...input,
     }),
     stateMachineArn: process.env.stateMachineArn,
@@ -46,7 +46,7 @@ export const main = async (): Promise<string> => {
 
   const { Item: item2 } = await updateItemEntityTest.get({
     type: "updateItemEntityTest",
-    id: "stepFunctionHandled",
+    name: "stepFunctionHandled",
   });
 
   if (item1 === undefined || item2 === undefined) {
