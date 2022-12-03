@@ -50,8 +50,8 @@ This package only relates to entity definition based on `object` definitions.
 | map                           | :x:     | :x:                | :white_check_mark:                    |
 | setType                       | :x:     | :x:                | :x:                                   |
 | delimiter                     | :x:     | :x:                | :x:                                   |
-| prefix                        | :x:     | :x:                | :white_check_mark:                    |
-| suffix                        | :x:     | :x:                | :white_check_mark:                    |
+| prefix                        | :x:     | :white_check_mark: | :white_check_mark:                    |
+| suffix                        | :x:     | :white_check_mark: | :white_check_mark:                    |
 | transform                     | :x:     | :x:                | :x:                                   |
 | format                        | :x:     | :x:                | :x:                                   |
 | partitionKey                  | :x:     | :white_check_mark: | :white_check_mark:                    |
