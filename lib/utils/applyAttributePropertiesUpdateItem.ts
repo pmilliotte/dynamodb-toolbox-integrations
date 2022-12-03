@@ -25,7 +25,7 @@ export const applyAttributePropertiesUpdateItem = (
         const value = {
           [key]: `States.Format('${prefix ?? ""}{}${
             suffix ?? ""
-          }', $.${attributeMap})`,
+          }',$.${attributeMap})`,
         };
         return {
           ...tempParams,
@@ -56,7 +56,9 @@ export const applyAttributePropertiesUpdateItem = (
       const dynamoDBExpressionAttributeValues =
         TYPE_MAPPING[type] === "S"
           ? {
-              [`:${attributeMap}.$`]: attributeValue,
+              [`:${attributeMap}.$`]: `States.Format('${prefix ?? ""}{}${
+                suffix ?? ""
+              }',${attributeValue})`,
             }
           : {
               [`:${attributeMap}`]: {
