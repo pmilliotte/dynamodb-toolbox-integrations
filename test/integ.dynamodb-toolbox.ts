@@ -15,11 +15,14 @@ import {
   LogType,
 } from "@aws-cdk/integ-tests-alpha";
 import { PutItemTest } from "./PutItem/TestConstruct";
+import { DynamodbToolboxGetItem } from "../lib/constructs/DynamodbToolboxGetItem";
+import { GetItemTest } from "./GetItem/TestConstruct";
 
 const app = new App();
 
 class TestStack extends Stack {
   public putItemTestName: string;
+
   constructor(scope: App, id: string) {
     super(scope, id);
 
@@ -36,14 +39,14 @@ class TestStack extends Stack {
       entity: TestEntity,
     });
 
-    const stateMachine = new StateMachine(this, "StepFunction", {
-      definition: chain.next(new Succeed(scope, "SuccessTask")),
+    const putStateMachine = new StateMachine(this, "StepFunctionPut", {
+      definition: chain.next(new Succeed(scope, "SuccessPut")),
       // Express needed for future get sync
       stateMachineType: StateMachineType.EXPRESS,
     });
-    const { stateMachineArn } = stateMachine;
+    const { stateMachineArn: putStateMachineArn } = putStateMachine;
 
-    stateMachine.addToRolePolicy(
+    putStateMachine.addToRolePolicy(
       new PolicyStatement({
         actions: ["dynamodb:PutItem"],
         resources: [tableArn],
@@ -52,7 +55,7 @@ class TestStack extends Stack {
 
     const putItemTest = new PutItemTest(this, "PutItemTest", {
       tableArn,
-      stateMachineArn,
+      stateMachineArn: putStateMachineArn,
     });
     this.putItemTestName = putItemTest.functionName;
   }
@@ -64,12 +67,12 @@ const integ = new IntegTest(app, "testCase", {
   testCases: [testCase],
 });
 
-const lambdaInvoke = integ.assertions.invokeFunction({
+const putLambdaInvoke = integ.assertions.invokeFunction({
   functionName: testCase.putItemTestName,
   invocationType: InvocationType.REQUEST_RESPONE,
   logType: LogType.NONE,
 });
 
-lambdaInvoke.expect(ExpectedResult.objectLike({ Payload: "\"\"" }));
+putLambdaInvoke.expect(ExpectedResult.objectLike({ Payload: '""' }));
 
 app.synth();
