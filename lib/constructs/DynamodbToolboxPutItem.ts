@@ -2,6 +2,7 @@ import { Chain, CustomState, Pass } from "aws-cdk-lib/aws-stepfunctions";
 import { Construct } from "constructs";
 import { Entity } from "../types";
 import { applyAttributeProperties } from "../utils/applyAttributeProperties";
+import { DynamodbToolboxIntegrationConstructProps } from "../utils/constructProps";
 import { getAllTransformedDataAsArray } from "../utils/getAllTransformedDataAsArray";
 import { getDataAsArray } from "../utils/getDataAsArray";
 import { getDefaultValues } from "../utils/getDefaultValues";
@@ -11,17 +12,13 @@ import { keepRelevantValue } from "../utils/keepRelevantValue";
 import { mapToArray } from "../utils/mapToArray";
 import { separateFromPlaceholder } from "../utils/separateFromPlaceholder";
 
-export interface DynamodbToolboxPutItemProps {
-  entity: Entity;
-}
-
 export class DynamodbToolboxPutItem extends Construct {
   public chain: Chain;
 
   constructor(
     scope: Construct,
     id: string,
-    { entity }: DynamodbToolboxPutItemProps
+    { entity }: DynamodbToolboxIntegrationConstructProps
   ) {
     super(scope, id);
 
