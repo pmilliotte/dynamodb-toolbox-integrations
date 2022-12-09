@@ -13,7 +13,7 @@ export const TestEntity = new Entity({
     count: { type: "number", map: "cnt" },
     lngth: { type: "number", alias: "length" },
     sentencePrefixed: { type: "string", prefix: "prefix" },
-    sentenceSuffixed: { type: "string", prefix: "suffix" },
+    sentenceSuffixed: { type: "string", suffix: "suffix" },
     nullInput: { type: "string" },
     nullInputSetToNull: { type: "string" },
   },
