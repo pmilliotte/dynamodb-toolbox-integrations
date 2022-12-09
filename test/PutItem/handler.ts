@@ -5,7 +5,7 @@ import has from "lodash/has";
 const sfnClient = new SFNClient({ region: "eu-west-1" });
 
 const input = {
-  type: "type",
+  pk: "type",
   age: 3,
   count: 2,
   length: 1,
@@ -15,18 +15,18 @@ const input = {
 
 export const main = async (): Promise<string> => {
   await TestEntity.put({
-    name: "name1",
+    sk: "name1",
     ...input,
   });
 
   const { Item: item1 } = await TestEntity.get({
-    type: "type",
-    name: "name1",
+    pk: "type",
+    sk: "name1",
   });
 
   const sfnCommand = new StartSyncExecutionCommand({
     input: JSON.stringify({
-      name: "name2",
+      sk: "name2",
       ...input,
     }),
     stateMachineArn: process.env.stateMachineArn,
@@ -35,8 +35,8 @@ export const main = async (): Promise<string> => {
   await sfnClient.send(sfnCommand);
 
   const { Item: item2 } = await TestEntity.get({
-    type: "type",
-    name: "name2",
+    pk: "type",
+    sk: "name2",
   });
 
   if (item1 === undefined || item2 === undefined) {

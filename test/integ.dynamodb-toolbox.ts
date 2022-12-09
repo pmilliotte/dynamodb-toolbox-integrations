@@ -26,8 +26,8 @@ class TestStack extends Stack {
     super(scope, id);
 
     const { tableArn } = new Table(this, "BigTable", {
-      partitionKey: { name: "type", type: AttributeType.STRING },
-      sortKey: { name: "name", type: AttributeType.STRING },
+      partitionKey: { name: "pk", type: AttributeType.STRING },
+      sortKey: { name: "sk", type: AttributeType.STRING },
       tableName: "Test",
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,

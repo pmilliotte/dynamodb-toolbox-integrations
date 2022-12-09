@@ -4,12 +4,12 @@ import { TestTable } from "../dynamodb-toolbox/table";
 export const updateItemEntityTest = new Entity({
   name: "Test",
   attributes: {
-    type: {
+    pk: {
       partitionKey: true,
       type: "string",
       prefix: "PK",
     },
-    name: { sortKey: true, type: "string", suffix: "SK" },
+    sk: { sortKey: true, type: "string", suffix: "SK" },
     prefixField: { type: "string", required: true, prefix: "PREFIX" },
     suffixField: { type: "string", required: true, suffix: "SUFFIX" },
     prefixAndSuffixField: {
@@ -25,7 +25,7 @@ export const updateItemEntityTest = new Entity({
 });
 
 export const input = {
-  type: "updateItemEntityTest",
+  pk: "updateItemEntityTest",
   prefixField: "ghi",
   suffixField: "jkl",
   prefixAndSuffixField: "mno",
@@ -34,7 +34,7 @@ export const input = {
 };
 
 export const output = {
-  type: "updateItemEntityTest",
+  pk: "updateItemEntityTest",
   prefixField: "ghi",
   suffixField: "jkl",
   prefixAndSuffixField: "mno",

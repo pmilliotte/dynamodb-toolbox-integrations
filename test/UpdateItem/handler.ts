@@ -5,7 +5,7 @@ import { input, updateItemEntityTest } from "./testUtils";
 const sfnClient = new SFNClient({ region: "eu-west-1" });
 
 const baseData = {
-  type: "updateItemEntityTest",
+  pk: "updateItemEntityTest",
   prefixField: "aaa",
   suffixField: "aaa",
   prefixAndSuffixField: "aaa",
@@ -15,28 +15,28 @@ const baseData = {
 
 export const main = async (): Promise<string> => {
   await updateItemEntityTest.put({
-    name: "lambdaHandled",
+    sk: "lambdaHandled",
     ...baseData,
   });
 
   await updateItemEntityTest.put({
-    name: "stepFunctionHandled",
+    sk: "stepFunctionHandled",
     ...baseData,
   });
 
   await updateItemEntityTest.update({
     ...input,
-    name: "lambdaHandled",
+    sk: "lambdaHandled",
   });
 
   const { Item: item1 } = await updateItemEntityTest.get({
-    type: "updateItemEntityTest",
-    name: "lambdaHandled",
+    pk: "updateItemEntityTest",
+    sk: "lambdaHandled",
   });
 
   const sfnCommand = new StartSyncExecutionCommand({
     input: JSON.stringify({
-      name: "stepFunctionHandled",
+      sk: "stepFunctionHandled",
       ...input,
     }),
     stateMachineArn: process.env.stateMachineArn,
@@ -45,8 +45,8 @@ export const main = async (): Promise<string> => {
   await sfnClient.send(sfnCommand);
 
   const { Item: item2 } = await updateItemEntityTest.get({
-    type: "updateItemEntityTest",
-    name: "stepFunctionHandled",
+    pk: "updateItemEntityTest",
+    sk: "stepFunctionHandled",
   });
 
   if (item1 === undefined || item2 === undefined) {
