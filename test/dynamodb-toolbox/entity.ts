@@ -4,11 +4,11 @@ import { TestTable } from "./table";
 export const TestEntity = new Entity({
   name: "Test",
   attributes: {
-    type: {
+    pk: {
       partitionKey: true,
       type: "string",
     },
-    name: { sortKey: true, type: "string" },
+    sk: { sortKey: true, type: "string" },
     age: { type: "number" },
     count: { type: "number", map: "cnt" },
     lngth: { type: "number", alias: "length" },

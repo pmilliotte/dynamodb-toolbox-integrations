@@ -1,32 +1,42 @@
-import { TestEntity } from "../dynamodb-toolbox";
 import { SFNClient, StartSyncExecutionCommand } from "@aws-sdk/client-sfn";
 import has from "lodash/has";
+import { input, updateItemEntityTest } from "./testUtils";
 
 const sfnClient = new SFNClient({ region: "eu-west-1" });
 
-const input = {
-  pk: "type",
-  age: 3,
-  count: 2,
-  length: 1,
-  sentencePrefixed: "sentencePrefixed",
-  sentenceSuffixed: "sentenceSuffixed",
+const baseData = {
+  pk: "updateItemEntityTest",
+  prefixField: "aaa",
+  suffixField: "aaa",
+  prefixAndSuffixField: "aaa",
+  onlyRequiredStringField: "aaa",
+  onlyRequiredNumberField: 123,
 };
 
 export const main = async (): Promise<string> => {
-  await TestEntity.put({
-    sk: "name1",
-    ...input,
+  await updateItemEntityTest.put({
+    sk: "lambdaHandled",
+    ...baseData,
   });
 
-  const { Item: item1 } = await TestEntity.get({
-    pk: "type",
-    sk: "name1",
+  await updateItemEntityTest.put({
+    sk: "stepFunctionHandled",
+    ...baseData,
+  });
+
+  await updateItemEntityTest.update({
+    ...input,
+    sk: "lambdaHandled",
+  });
+
+  const { Item: item1 } = await updateItemEntityTest.get({
+    pk: "updateItemEntityTest",
+    sk: "lambdaHandled",
   });
 
   const sfnCommand = new StartSyncExecutionCommand({
     input: JSON.stringify({
-      sk: "name2",
+      sk: "stepFunctionHandled",
       ...input,
     }),
     stateMachineArn: process.env.stateMachineArn,
@@ -34,9 +44,9 @@ export const main = async (): Promise<string> => {
 
   await sfnClient.send(sfnCommand);
 
-  const { Item: item2 } = await TestEntity.get({
-    pk: "type",
-    sk: "name2",
+  const { Item: item2 } = await updateItemEntityTest.get({
+    pk: "updateItemEntityTest",
+    sk: "stepFunctionHandled",
   });
 
   if (item1 === undefined || item2 === undefined) {
@@ -56,20 +66,6 @@ export const main = async (): Promise<string> => {
   if (keysString !== `It should have key(s)`) {
     return keysString;
   }
-
-  // keysString = `It should not have key(s)`;
-
-  // Object.keys(item2).forEach((key) => {
-  //   const hasKey = has(item1, key);
-
-  //   if (!hasKey) {
-  //     keysString = keysString + " " + key;
-  //   }
-  // });
-
-  // if (keysString !== `It should not have key(s)`) {
-  //   return keysString;
-  // }
 
   return "";
 };

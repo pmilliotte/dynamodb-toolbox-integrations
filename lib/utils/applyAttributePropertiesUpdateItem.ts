@@ -1,12 +1,6 @@
 import { Entity } from "../types";
+import { TYPE_MAPPING } from "../types/Entity";
 import { DYNAMODB_TOOLBOX_GENERATED_ATTRIBUTE_ALIASES } from "./constants";
-
-const TYPE_MAPPING: Record<string, string> = {
-  string: "S",
-  number: "N",
-  boolean: "Bool",
-  map: "M",
-};
 
 export const applyAttributePropertiesUpdateItem = (
   entity: Entity
@@ -31,7 +25,7 @@ export const applyAttributePropertiesUpdateItem = (
         const value = {
           [key]: `States.Format('${prefix ?? ""}{}${
             suffix ?? ""
-          }', $.${attributeMap})`,
+          }',$.${attributeMap})`,
         };
         return {
           ...tempParams,
@@ -62,7 +56,9 @@ export const applyAttributePropertiesUpdateItem = (
       const dynamoDBExpressionAttributeValues =
         TYPE_MAPPING[type] === "S"
           ? {
-              [`:${attributeMap}.$`]: attributeValue,
+              [`:${attributeMap}.$`]: `States.Format('${prefix ?? ""}{}${
+                suffix ?? ""
+              }',${attributeValue})`,
             }
           : {
               [`:${attributeMap}`]: {
@@ -99,10 +95,3 @@ export const applyAttributePropertiesUpdateItem = (
 
   return params;
 };
-
-// {
-//   "type": "azert",
-//   "id": "123456789",
-//   "name": "Azure",
-//   "age": 7.22
-// }
