@@ -38,12 +38,12 @@ describe("applyAttributePropertiesUpdateItem", () => {
         },
       },
       UpdateExpression:
-        "SET #name_ATTRIBUTE_ALIAS = :name, #age_ATTRIBUTE_ALIAS = :age, #_ct_ATTRIBUTE_ALIAS = :_ct, #_md_ATTRIBUTE_ALIAS = :_md",
+        "SET #name_ATTRIBUTE_NAME = :name, #age_ATTRIBUTE_NAME = :age, #_ct_ATTRIBUTE_NAME = :_ct, #_md_ATTRIBUTE_NAME = :_md",
       ExpressionAttributeNames: {
-        "#name_ATTRIBUTE_ALIAS": "name",
-        "#age_ATTRIBUTE_ALIAS": "age",
-        "#_ct_ATTRIBUTE_ALIAS": "_ct",
-        "#_md_ATTRIBUTE_ALIAS": "_md",
+        "#name_ATTRIBUTE_NAME": "name",
+        "#age_ATTRIBUTE_NAME": "age",
+        "#_ct_ATTRIBUTE_NAME": "_ct",
+        "#_md_ATTRIBUTE_NAME": "_md",
       },
       ExpressionAttributeValues: {
         ":age": {
@@ -92,13 +92,13 @@ describe("applyAttributePropertiesUpdateItem", () => {
         },
       },
       UpdateExpression:
-        "SET #prefix_ATTRIBUTE_ALIAS = :prefix, #suffix_ATTRIBUTE_ALIAS = :suffix, #prefixAndSuffix_ATTRIBUTE_ALIAS = :prefixAndSuffix, #_ct_ATTRIBUTE_ALIAS = :_ct, #_md_ATTRIBUTE_ALIAS = :_md",
+        "SET #prefix_ATTRIBUTE_NAME = :prefix, #suffix_ATTRIBUTE_NAME = :suffix, #prefixAndSuffix_ATTRIBUTE_NAME = :prefixAndSuffix, #_ct_ATTRIBUTE_NAME = :_ct, #_md_ATTRIBUTE_NAME = :_md",
       ExpressionAttributeNames: {
-        "#prefix_ATTRIBUTE_ALIAS": "prefix",
-        "#suffix_ATTRIBUTE_ALIAS": "suffix",
-        "#prefixAndSuffix_ATTRIBUTE_ALIAS": "prefixAndSuffix",
-        "#_ct_ATTRIBUTE_ALIAS": "_ct",
-        "#_md_ATTRIBUTE_ALIAS": "_md",
+        "#prefix_ATTRIBUTE_NAME": "prefix",
+        "#suffix_ATTRIBUTE_NAME": "suffix",
+        "#prefixAndSuffix_ATTRIBUTE_NAME": "prefixAndSuffix",
+        "#_ct_ATTRIBUTE_NAME": "_ct",
+        "#_md_ATTRIBUTE_NAME": "_md",
       },
       ExpressionAttributeValues: {
         ":prefix.$": "States.Format('PREFIX{}',$.prefix)",

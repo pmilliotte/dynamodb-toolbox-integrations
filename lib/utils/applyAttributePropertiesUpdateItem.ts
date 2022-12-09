@@ -38,7 +38,7 @@ export const applyAttributePropertiesUpdateItem = (
 
       const alreadyHasAttributesToUpdate = tempParams.UpdateExpression !== "";
 
-      const attributeNameAlias = `#${attributeMap}_ATTRIBUTE_ALIAS`;
+      const attributeNameAlias = `#${attributeMap}_ATTRIBUTE_NAME`;
       const dynamoDBAttributeExpression = `${
         !alreadyHasAttributesToUpdate ? "SET " : ""
       }${
