@@ -1,4 +1,9 @@
-import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import {
+  ManagedPolicy,
+  PolicyStatement,
+  Role,
+  ServicePrincipal,
+} from "aws-cdk-lib/aws-iam";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 import * as path from "path";
@@ -17,6 +22,11 @@ export class UpdateItemTestLambdaFunction extends Construct {
     const role = new Role(this, "DynamodbUpdate", {
       assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
     });
+    role.addManagedPolicy(
+      ManagedPolicy.fromAwsManagedPolicyName(
+        "service-role/AWSLambdaBasicExecutionRole"
+      )
+    );
     role.addToPolicy(
       new PolicyStatement({
         actions: [

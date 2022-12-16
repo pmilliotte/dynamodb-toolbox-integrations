@@ -14,7 +14,16 @@ const baseData = {
 };
 
 export const main = async (): Promise<string> => {
+  console.log("base data", {
+    sk: "lambdaHandled",
+    ...baseData,
+  });
   await updateItemEntityTest.put({
+    sk: "lambdaHandled",
+    ...baseData,
+  });
+
+  console.log("base data", {
     sk: "lambdaHandled",
     ...baseData,
   });
@@ -24,12 +33,22 @@ export const main = async (): Promise<string> => {
     ...baseData,
   });
 
-  await updateItemEntityTest.update({
+  console.log("update data", {
     ...input,
     sk: "lambdaHandled",
   });
 
+  await updateItemEntityTest.update({
+    ...input,
+    sk: "lambdaHandled",
+  });
+  console.log("updated item with ddbt");
+
   const { Item: item1 } = await updateItemEntityTest.get({
+    pk: "updateItemEntityTest",
+    sk: "lambdaHandled",
+  });
+  console.log("get", {
     pk: "updateItemEntityTest",
     sk: "lambdaHandled",
   });
@@ -41,8 +60,10 @@ export const main = async (): Promise<string> => {
     }),
     stateMachineArn: process.env.stateMachineArn,
   });
+  console.log("sfn command");
 
   await sfnClient.send(sfnCommand);
+  console.log("update item start");
 
   const { Item: item2 } = await updateItemEntityTest.get({
     pk: "updateItemEntityTest",

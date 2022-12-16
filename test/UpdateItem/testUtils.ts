@@ -1,5 +1,16 @@
 import { Entity } from "dynamodb-toolbox";
-import { TestTable } from "../dynamodb-toolbox/table";
+
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { Table } from "dynamodb-toolbox";
+
+const documentClient = new DocumentClient({ region: "eu-west-1" });
+
+const TestTable = new Table({
+  name: "Test",
+  partitionKey: "pk",
+  sortKey: "sk",
+  DocumentClient: documentClient,
+});
 
 export const updateItemEntityTest = new Entity({
   name: "Test",
@@ -7,9 +18,8 @@ export const updateItemEntityTest = new Entity({
     pk: {
       partitionKey: true,
       type: "string",
-      prefix: "PK",
     },
-    sk: { sortKey: true, type: "string", suffix: "SK" },
+    sk: { sortKey: true, type: "string" },
     prefixField: { type: "string", required: true, prefix: "PREFIX" },
     suffixField: { type: "string", required: true, suffix: "SUFFIX" },
     prefixAndSuffixField: {
