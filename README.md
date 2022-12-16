@@ -15,15 +15,15 @@ The construct defines an interface (`DynamodbToolboxIntegrationsLibProps`) to co
 
 ### Entity definitions
 
-| DDB-toolbox entity options | GetItem            | GetItem            | PutItem            |
+| DDB-toolbox entity options | GetItem            | UpdateItem         | PutItem            |
 | -------------------------- | ------------------ | ------------------ | ------------------ |
 | name                       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| timestamps                 | :x:                | :x:                | :x:                |
-| created                    | :x:                | :x:                | :x:                |
-| modified                   | :x:                | :x:                | :x:                |
-| createdAlias               | :x:                | :x:                | :x:                |
-| modifiedAlias              | :x:                | :x:                | :x:                |
-| typeAlias                  | :x:                | :x:                | :x:                |
+| timestamps                 | :white_check_mark: | :x:                | :white_check_mark: |
+| created                    | :white_check_mark: | :x:                | :white_check_mark: |
+| modified                   | :white_check_mark: | :x:                | :white_check_mark: |
+| createdAlias               | :white_check_mark: | :x:                | :white_check_mark: |
+| modifiedAlias              | :white_check_mark: | :x:                | :white_check_mark: |
+| typeAlias                  | :white_check_mark: | :x:                | :white_check_mark: |
 | typeHidden                 | :x:                | :x:                | :x:                |
 | attributes                 | :x:                | :x:                | :x:                |
 | autoExecute                | :x:                | :x:                | :x:                |
