@@ -3,14 +3,14 @@ import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 import * as path from "path";
 
-type PutItemTestProps = { tableArn: string; stateMachineArn: string };
+type GetItemSdkProps = { tableArn: string; tableName: string };
 
-export class PutItemTest extends Construct {
+export class GetItemSdk extends Construct {
   public functionName: string;
   constructor(
     scope: Construct,
     id: string,
-    { tableArn, stateMachineArn }: PutItemTestProps
+    { tableArn, tableName }: GetItemSdkProps
   ) {
     super(scope, id);
 
@@ -23,19 +23,13 @@ export class PutItemTest extends Construct {
         resources: [tableArn],
       })
     );
-    role.addToPolicy(
-      new PolicyStatement({
-        actions: ["states:StartSyncExecution"],
-        resources: [stateMachineArn],
-      })
-    );
 
-    const { functionName } = new NodejsFunction(this, "PutItemTest", {
+    const { functionName } = new NodejsFunction(this, "GetItemSdk", {
       handler: "main",
       // Get the file built
       entry: path.join(__dirname, `/handler.js`),
       role,
-      environment: { stateMachineArn },
+      environment: { tableName },
     });
     this.functionName = functionName;
   }
