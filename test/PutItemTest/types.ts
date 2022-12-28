@@ -5,3 +5,5 @@ export type AssertionTestInput = {
   testCase: TestStack;
   integ: IntegTest;
 };
+
+export const TABLE_NAME = "PutTable";

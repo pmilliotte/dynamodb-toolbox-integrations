@@ -1,8 +1,8 @@
 import { Entity } from "dynamodb-toolbox";
 import { TestTable } from "./table";
 
-export const TestEntity = new Entity({
-  name: "Test",
+export const TestPutEntity = new Entity({
+  name: "Put",
   attributes: {
     pk: {
       partitionKey: true,
