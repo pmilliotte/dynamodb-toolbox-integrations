@@ -8,7 +8,7 @@
     "synth": "cdk synth --app \"npx ts-node --prefer-ts-exts test/integ.dynamodb-toolbox.ts\" testStack",
     "watch": "tsc -w",
     "test": "jest",
-    "integ": "integ-runner --parallel-regions eu-west-1 --update-on-failed --directory dist/test --disable-update-workflow --force --verbose --profiles default --clean false integ.dynamodb-toolbox.js",
+    "integ": "tsc; integ-runner --parallel-regions eu-west-1 --update-on-failed --directory dist/test --disable-update-workflow --force --verbose --profiles default --clean false",
     "test-unit": "vitest run"
   },
   "devDependencies": {
@@ -19,7 +19,8 @@
     "@types/node": "^18.8.4",
     "@types/prettier": "2.6.0",
     "@types/uuid": "^8.3.4",
-    "aws-cdk-lib": "^2.50.0",
+    "aws-cdk": "^2.56",
+    "aws-cdk-lib": "^2.56",
     "constructs": "^10.1.124",
     "esbuild": "^0.15.12",
     "jest": "^27.5.1",
@@ -28,18 +29,19 @@
     "typescript": "~3.9.7",
     "vite": "^3.1.7",
     "vite-tsconfig-paths": "^3.5.0",
+    "@aws-cdk/integ-runner": "^2.56.0",
+    "@aws-cdk/integ-tests-alpha": "^2.56.0-alpha.0",
+    "aws-lambda": "^1.0.7",
     "vitest": "^0.23.1"
   },
   "peerDependencies": {
-    "aws-cdk-lib": "^2.50.0",
-    "constructs": "^10.0.0"
+    "aws-cdk-lib": "^2.56",
+    "constructs": "^10.0.0",
+    "dynamodb-toolbox": "^0.4.3"
   },
   "dependencies": {
-    "@aws-cdk/integ-runner": "^2.50.0",
-    "@aws-cdk/integ-tests-alpha": "^2.50.0-alpha.0",
-    "aws-lambda": "^1.0.7",
+    "@aws-sdk/client-dynamodb": "^3.223.0",
     "aws-sdk": "^2.1231.0",
-    "dynamodb-toolbox": "^0.4.3",
-    "uuid": "^9.0.0"
+    "dynamodb-toolbox": "^0.4.3"
   }
 }
