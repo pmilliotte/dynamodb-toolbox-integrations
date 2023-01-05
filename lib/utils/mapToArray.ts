@@ -1,22 +1,20 @@
 import { Entity } from "../types";
-import { EntityAttributes } from "../types/Entity";
+import { getAttributeMaps } from "./attributes";
 
-export const mapToArray = (entity: Entity): Record<string, string> => {
-  const { attributes } = entity.schema;
+export const mapToArray = (entity: Entity, jsonPath: string = "$"): string => {
+  const string = "States.Array(";
 
-  // TODO Optimize with a map uniq 
-  const params = Object.keys(attributes as EntityAttributes).reduce(
-    (temporaryParams, attributeKey) => {
-      const attributeMap = attributes[attributeKey].map ?? attributeKey;
-      const attributeAlias = attributes[attributeKey].alias ?? attributeKey;
+  const attributeMaps = getAttributeMaps(entity);
 
-      return {
-        ...temporaryParams,
-        [`${attributeMap}.$`]: `States.Array($.data['${attributeAlias}'])`,
-      };
-    },
-    {}
+  const params = attributeMaps.reduce(
+    (temporaryParams, attributeMap, index) =>
+      temporaryParams.concat(
+        `${jsonPath}['${attributeMap}']${
+          index === attributeMaps.length - 1 ? "" : ","
+        }`
+      ),
+    string
   );
 
-  return params;
+  return params.concat(")");
 };

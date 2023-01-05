@@ -1,11 +1,11 @@
-import { Entity } from "../types";
-import { getAttributeMaps } from "./attributes";
-
-export const keepRelevantValue = (entity: Entity): Record<string, string> => {
-  const params = getAttributeMaps(entity).reduce(
-    (temporaryParams, attributeMap) => ({
+export const keepRelevantValue = (
+  attributeNames: string[],
+  jsonPath: string
+): Record<string, string> => {
+  const params = attributeNames.reduce(
+    (temporaryParams, attributeName) => ({
       ...temporaryParams,
-      [`${attributeMap}.$`]: `$..arrays[?(@.attributeMap=='${attributeMap}' && @.length == 1)].value[0]`,
+      [`${attributeName}.$`]: `${jsonPath}[?(@.attributeName=='${attributeName}' && @.length == 1)].value[0]`,
     }),
     {}
   );

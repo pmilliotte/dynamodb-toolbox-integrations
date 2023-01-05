@@ -27,7 +27,7 @@ export const applyAttributeProperties = (
         "isPlaceholder.$": `States.ArrayContains($.data['${attributeMap}'], $.uuid)`,
         "isNull.$": `States.ArrayContains($.data['${attributeMap}'], null)`,
         // Need to set it as array to be able to get null value if removeNullAttributes is true, because Dynamodb does not support Null properties set to false
-        attributeMap,
+        attributeName: attributeMap,
         nullValue: [null],
         null2Value: [nullValue],
       },

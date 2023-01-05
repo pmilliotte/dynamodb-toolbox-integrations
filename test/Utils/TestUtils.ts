@@ -1,4 +1,5 @@
 import { Construct } from "constructs";
+import { GetItemDynamodbToolbox } from "./GetItemDynamodbToolbox/Construct";
 import { GetItemSdk } from "./GetItemSdk/Construct";
 import { PutItemDynamodbToolbox } from "./PutItemDynamodbToolbox/Construct";
 import { UpdateItemDynamodbToolbox } from "./UpdateItemDynamodbToolbox/Construct";
@@ -13,6 +14,7 @@ export class TestUtils extends Construct {
   public getItemSdkFunctionName: string;
   public putItemDynamodbToolboxFunctionName: string;
   public updateItemDynamodbToolboxFunctionName: string;
+  public getItemDynamodbToolboxFunctionName: string;
 
   constructor(
     scope: Construct,
@@ -43,5 +45,13 @@ export class TestUtils extends Construct {
       });
     this.updateItemDynamodbToolboxFunctionName =
       updateItemDynamodbToolboxFunctionName;
+
+    const { functionName: getItemDynamodbToolboxFunctionName } =
+      new GetItemDynamodbToolbox(this, "GetItemDynamodbToolbox", {
+        tableArn,
+        entityName,
+      });
+    this.getItemDynamodbToolboxFunctionName =
+      getItemDynamodbToolboxFunctionName;
   }
 }

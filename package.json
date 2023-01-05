@@ -5,7 +5,7 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "synth": "cdk synth --app \"npx ts-node --prefer-ts-exts test/integ.dynamodb-toolbox.ts\" testStack",
+    "synth": "cdk synth --app \"npx ts-node --prefer-ts-exts test/GetItemTest/integ.get.ts\" testStack",
     "watch": "tsc -w",
     "test": "jest",
     "integ": "tsc; integ-runner --parallel-regions eu-west-1 --update-on-failed --directory dist/test --disable-update-workflow --force --verbose --profiles default --clean false",

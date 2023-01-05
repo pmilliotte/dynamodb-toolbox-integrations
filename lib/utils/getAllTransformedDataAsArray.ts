@@ -1,19 +1,24 @@
-import { Entity } from "../types";
-import { getAttributeMaps } from "./attributes";
+export const getAllTransformedDataAsArray = (
+  attributeNames: string[],
+  jsonPath: string,
+  removePlaceholder: boolean = false
+): string => {
+  const beginningString = "States.Array(";
 
-export const getAllTransformedDataAsArray = (entity: Entity): string => {
-  const string = "States.Array(";
+  const params = attributeNames.reduce(
+    (temporaryString, attributeName, index) => {
+      const placeholder = removePlaceholder
+        ? ""
+        : `${jsonPath}['${attributeName}.placeholder'], `;
 
-  const attributeMaps = getAttributeMaps(entity);
-
-  const params = attributeMaps.reduce(
-    (temporaryString, attributeMap, index) =>
-      temporaryString.concat(
-        `$.arrays['${attributeMap}.placeholder'], $.arrays['${attributeMap}.input'], $.arrays['${attributeMap}.null']${
-          index === attributeMaps.length - 1 ? "" : ","
+      return temporaryString.concat(
+        placeholder,
+        `${jsonPath}['${attributeName}.input'], ${jsonPath}['${attributeName}.null']${
+          index === attributeNames.length - 1 ? "" : ","
         } `
-      ),
-    string
+      );
+    },
+    beginningString
   );
 
   return params.concat(")");

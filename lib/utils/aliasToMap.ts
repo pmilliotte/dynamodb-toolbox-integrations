@@ -1,19 +1,22 @@
 import { Entity } from "../types";
-import { getKeyAliases } from "./attributes";
+import { TYPE_MAPPING } from "../types/Entity";
+import { getAttributeMaps } from "./attributes";
 
-export const aliasToMap = (entity: Entity): Record<string, unknown> => {
-  const keyAliases = getKeyAliases(entity);
+export const aliasToMap = (
+  entity: Entity,
+  jsonPath: string = "$"
+): Record<string, unknown> => {
+  const attributeMaps = getAttributeMaps(entity);
 
-  const params = keyAliases.reduce((tempParams, keyAlias) => {
-    console.log(entity.schema.attributes);
+  const params = attributeMaps.reduce((tempParams, attributeMap) => {
+    const { type, alias } = entity.schema.attributes[attributeMap];
     return {
       ...tempParams,
-      [`${
-        entity.schema.attributes[keyAlias].map ?? keyAlias
-      }.$`]: `$.${keyAlias}`,
+      [`${attributeMap}.$`]: `${jsonPath}.${alias ?? attributeMap}.${
+        TYPE_MAPPING[type]
+      }`,
     };
   }, {} as Record<string, unknown>);
 
-  console.log("params", params);
   return params;
 };
