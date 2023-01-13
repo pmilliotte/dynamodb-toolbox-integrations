@@ -1,60 +1,56 @@
-import { TestEntity } from "../dynamodb-toolbox";
 import { SFNClient, StartSyncExecutionCommand } from "@aws-sdk/client-sfn";
 import { isEqual } from "lodash";
+import { TestQueryEntity } from "./dynamodb-toolbox";
 
 const sfnClient = new SFNClient({ region: "eu-west-1" });
 
 const inputArbre = {
-  type: "arbre",
-  name: "Jean-Claude",
-  age: 3,
-  count: 2,
+  pk: "arbre",
+  sk: "Jean-Claude",
 };
 
 const inputAlgues = {
-  type: "algues",
-  name: "Algumus",
-  age: 3,
-  count: 2,
+  pk: "algues",
+  sk: "Algumus",
 };
 
 export const main = async (): Promise<unknown> => {
   // Put with dynamoodb toolbox
-  await TestEntity.put({
+  await TestQueryEntity.put({
     ...inputArbre,
   });
 
-  await TestEntity.put({
+  await TestQueryEntity.put({
     ...inputArbre,
-    name: "Jean-David",
+    sk: "Jean-David",
   });
-  await TestEntity.put({
+  await TestQueryEntity.put({
     ...inputArbre,
-    name: "Jean-Marc",
+    sk: "Jean-Marc",
   });
 
-  await TestEntity.put({
+  await TestQueryEntity.put({
     ...inputAlgues,
   });
 
-  await TestEntity.put({
+  await TestQueryEntity.put({
     ...inputAlgues,
-    name: "Mumus",
+    sk: "Mumus",
   });
 
-  await TestEntity.put({
+  await TestQueryEntity.put({
     ...inputAlgues,
-    name: "Tutus",
+    sk: "Tutus",
   });
 
   // Fetched with dynamoodb toolbox
-  const { Items: ItemsArbre } = await TestEntity.query({
-    type: "arbre",
+  const { Items: ItemsArbre } = await TestQueryEntity.query({
+    pk: "arbre",
   });
 
   const querySfnCommand = new StartSyncExecutionCommand({
     input: JSON.stringify({
-      type: "arbre",
+      pk: "arbre",
     }),
     stateMachineArn: process.env.stateMachineArn,
   });

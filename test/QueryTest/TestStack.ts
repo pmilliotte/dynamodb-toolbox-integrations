@@ -36,7 +36,7 @@ export class TestStack extends Stack {
 
     const { queryStateMachineArn } = new QueryStateMachine(
       this,
-      "GetItemTestConstruct",
+      "QueryTestConstruct",
       { tableArn }
     );
     this.queryStateMachineArn = queryStateMachineArn;
