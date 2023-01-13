@@ -16,7 +16,7 @@ import {
 } from "@aws-cdk/integ-tests-alpha";
 import { PutItemTest } from "./PutItem/TestConstruct";
 import { DynamodbToolboxQuery } from "../lib/constructs/DynamodbToolboxQuery";
-import { QueryTest } from "./Query/TestConstruct";
+import { QueryTest } from "./QueryItemsTest/Construct";
 
 const app = new App();
 

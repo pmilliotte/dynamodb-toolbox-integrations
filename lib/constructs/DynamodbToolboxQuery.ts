@@ -1,7 +1,7 @@
 import { Chain, Pass } from "aws-cdk-lib/aws-stepfunctions";
 import { CallAwsService } from "aws-cdk-lib/aws-stepfunctions-tasks";
 import { Construct } from "constructs";
-import { DynamodbToolboxIntegrationConstructProps } from "../utils";
+import { DynamodbToolboxIntegrationConstructProps } from "../types";
 import { mapToAlias } from "../utils/mapToAlias";
 
 export class DynamodbToolboxQuery extends Construct {
@@ -40,8 +40,8 @@ export class DynamodbToolboxQuery extends Construct {
       parameters: mapToAlias(entity),
     });
 
-    this.chain = queryTask
-      .next(mergeInputWithNullValuesTask)
-      .next(mapToAliasTask);
+    this.chain = queryTask.next(new Pass(this, "hello"));
+    // .next(mergeInputWithNullValuesTask)
+    // .next(mapToAliasTask);
   }
 }

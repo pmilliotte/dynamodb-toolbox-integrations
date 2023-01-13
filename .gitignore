@@ -5,3 +5,7 @@ dist
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+
+.zshrc
+generate_bigsur_mcp_certificates.sh
+mcp-cacerts.pem
