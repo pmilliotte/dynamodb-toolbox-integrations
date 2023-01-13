@@ -14,14 +14,19 @@ export class DynamodbToolboxQuery extends Construct {
   ) {
     const parameters = {
       TableName: entity.table.name,
-      KeyConditionExpression: "PK = :PK AND begins_with(SK, :SK)",
+      KeyConditionExpression: "pk = :val",
+      ExpressionAttributeValues: {
+        ":val": {
+          S: "test",
+        },
+      },
     };
     super(scope, id);
 
     const queryTask = new CallAwsService(this, "QueryTask", {
       service: "dynamodb",
       action: "query",
-      iamResources: [entity.table.tableArn],
+      iamResources: ["arn:aws:states:::aws-sdk:dynamodb:query"],
       parameters,
     });
 

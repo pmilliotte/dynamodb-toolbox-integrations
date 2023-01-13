@@ -34,11 +34,11 @@ export class QueryStateMachine extends Construct {
     const stateMachine = new StateMachine(this, "QueryStepFunction", {
       definition: chain.next(new Succeed(scope, "QuerySuccessTask")),
       // Express needed for future get sync
-      stateMachineType: StateMachineType.EXPRESS,
-      logs: {
-        destination: logGroup,
-        level: LogLevel.ALL,
-      },
+      // stateMachineType: StateMachineType.EXPRESS,
+      // logs: {
+      //   destination: logGroup,
+      //   level: LogLevel.ALL,
+      // },
     });
     const { stateMachineArn } = stateMachine;
     this.queryStateMachineArn = stateMachineArn;
