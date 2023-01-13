@@ -1,16 +1,19 @@
 import { Chain, CustomState, Pass } from "aws-cdk-lib/aws-stepfunctions";
 import { Construct } from "constructs";
-import { Entity } from "../types";
-import { applyAttributeProperties } from "../utils/applyAttributeProperties";
-import { DynamodbToolboxIntegrationConstructProps } from "../utils/constructProps";
+import { aliasToMap } from "../utils/aliasToMap";
 import { getAllTransformedDataAsArray } from "../utils/getAllTransformedDataAsArray";
-import { getDataAsArray } from "../utils/getDataAsArray";
 import { getDefaultValues } from "../utils/getDefaultValues";
 import { getFirstItem } from "../utils/getFirstItem";
-import { getPlaceholderInputValues } from "../utils/getPlaceholderInputValues";
-import { keepRelevantValue } from "../utils/keepRelevantValue";
-import { mapToArray } from "../utils/mapToArray";
+import { getPlaceholderValues } from "../utils/getPlaceholderValues";
 import { separateFromPlaceholder } from "../utils/separateFromPlaceholder";
+import { getAttributeAliases, getAttributeMaps } from "../utils/attributes";
+import { valueToObject } from "../utils/valueToObject";
+import { getValuesToConcat } from "../utils/getValuesToConcat";
+import { valuesToArray } from "../utils/valuesToArray";
+import { valuesToOneValueArray } from "../utils/valuesToOneValueArray";
+import { concatMaps } from "../utils/concatMaps";
+import { mergeWithValueToConcat } from "../utils/mergeWithValueToConcat";
+import { DynamodbToolboxIntegrationConstructProps } from "../types";
 
 export class DynamodbToolboxPutItem extends Construct {
   public chain: Chain;
@@ -21,6 +24,9 @@ export class DynamodbToolboxPutItem extends Construct {
     { entity }: DynamodbToolboxIntegrationConstructProps
   ) {
     super(scope, id);
+
+    const aliases = getAttributeAliases(entity);
+    const maps = getAttributeMaps(entity);
 
     const generateUuidTask = new Pass(this, "GetDefaultValues", {
       parameters: {
@@ -35,39 +41,54 @@ export class DynamodbToolboxPutItem extends Construct {
       parameters: {
         "input.$": "States.JsonMerge($.defaultValues, $.input, false)",
         "uuid.$": "$.uuid",
-        placeholderInputValues: getPlaceholderInputValues(entity),
+        placeholderValues: getPlaceholderValues(aliases),
       },
     });
 
     const mergeInputTask = new Pass(this, "MergeObjects", {
       parameters: {
         "uuid.$": "$.uuid",
-        "data.$": "States.JsonMerge($.placeholderInputValues, $.input, false)",
+        "data.$": "States.JsonMerge($.placeholderValues, $.input, false)",
       },
     });
 
-    const mapToArrayTask = new Pass(this, "MapToArray", {
+    const aliasToMapTask = new Pass(this, "AliasToMap", {
       parameters: {
         "uuid.$": "$.uuid",
-        data: mapToArray(entity),
+        data: aliasToMap(entity, "$.data"),
       },
     });
 
-    const applyAttributePropertiesTask = new Pass(
+    const valuesToArrayTask = new Pass(this, "ValuesToArray", {
+      parameters: {
+        data: valuesToOneValueArray(maps, "$.data"),
+        "uuid.$": "$.uuid",
+      },
+    });
+
+    // Logic is here
+    const mapsToObjectTask = new Pass(this, "MapsToObject", {
+      parameters: {
+        data: valueToObject(maps, "$.data", entity),
+        "uuid.$": "$.uuid",
+      },
+    });
+
+    const mergeWithValueToConcatTask = new Pass(
       this,
-      "ApplyDynamodbToolboxEntityProperties",
+      "MergeWithValueToConcat",
       {
         parameters: {
+          data: mergeWithValueToConcat(maps, "$.data"),
           "uuid.$": "$.uuid",
-          data: applyAttributeProperties(entity),
         },
       }
     );
 
-    const getDataAsArrayTask = new Pass(this, "GetDataAsArray", {
+    const aliasToArrayTask = new Pass(this, "MapsToArray", {
       parameters: {
+        "array.$": valuesToArray(maps, "$.data"),
         "uuid.$": "$.uuid",
-        "array.$": getDataAsArray(entity),
       },
     });
 
@@ -77,7 +98,7 @@ export class DynamodbToolboxPutItem extends Construct {
       {
         parameters: {
           "uuid.$": "$.uuid",
-          arrays: separateFromPlaceholder(entity),
+          arrays: separateFromPlaceholder(maps, "$.array"),
         },
       }
     );
@@ -88,21 +109,37 @@ export class DynamodbToolboxPutItem extends Construct {
       {
         parameters: {
           "uuid.$": "$.uuid",
-          "arrays.$": getAllTransformedDataAsArray(entity),
+          "arrays.$": getAllTransformedDataAsArray(maps, "$.arrays"),
         },
       }
     );
 
-    const keepRelevantValueTask = new Pass(this, "KeepRelevantValue", {
+    const getValuesToConcatTask = new Pass(this, "GetValuesToConcat", {
       parameters: {
-        object: keepRelevantValue(entity),
+        "uuid.$": "$.uuid",
+        object: getValuesToConcat(maps, "$..arrays", "valueToConcat"),
+        separator: getValuesToConcat(maps, "$..arrays", "separator"),
       },
     });
 
     const getFirstItemTask = new Pass(this, "GetFirstItem", {
       parameters: {
-        object: getFirstItem(entity),
+        object: getFirstItem(maps, "$.object"),
+        separator: getFirstItem(maps, "$.separator"),
       },
+    });
+
+    const concatTask = new Pass(this, "Concat", {
+      parameters: {
+        "object.$": concatMaps(entity, "$.object", "$.separator"),
+      },
+    });
+
+    const toJsonTask = new Pass(this, "ToJson", {
+      parameters: {
+        "object.$": "States.StringToJson($.object)",
+      },
+      outputPath: "$.object",
     });
 
     const putItemTask = new CustomState(this, "PutItem", {
@@ -111,22 +148,26 @@ export class DynamodbToolboxPutItem extends Construct {
         Resource: "arn:aws:states:::dynamodb:putItem",
         Parameters: {
           TableName: entity.table.name,
-          "Item.$": "$.object",
+          "Item.$": "$",
         },
-        ResultPath: null,
       },
     });
 
     this.chain = generateUuidTask
       .next(getNullInputValuesTask)
       .next(mergeInputTask)
-      .next(mapToArrayTask)
-      .next(applyAttributePropertiesTask)
-      .next(getDataAsArrayTask)
+      .next(aliasToMapTask)
+      // remove uuid and marshall
+      .next(valuesToArrayTask)
+      .next(mapsToObjectTask)
+      .next(mergeWithValueToConcatTask)
+      .next(aliasToArrayTask)
       .next(separateFromPlaceholderTask)
       .next(getAllTransformedDataAsArrayTask)
-      .next(keepRelevantValueTask)
+      .next(getValuesToConcatTask)
       .next(getFirstItemTask)
+      .next(concatTask)
+      .next(toJsonTask)
       .next(putItemTask);
   }
 }

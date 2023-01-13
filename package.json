@@ -8,7 +8,7 @@
     "synth": "cdk synth --app \"npx ts-node --prefer-ts-exts test/integ.dynamodb-toolbox.ts\" testStack",
     "watch": "tsc -w",
     "test": "jest",
-    "integ": "tsc; integ-runner --parallel-regions eu-west-1 --update-on-failed --directory dist/test --disable-update-workflow --force --verbose --profiles default --clean false",
+    "integ": "rm -rf dist; tsc; integ-runner --parallel-regions eu-west-1 --update-on-failed --directory dist/test --disable-update-workflow --force --verbose --profiles default --clean false",
     "test-unit": "vitest run"
   },
   "devDependencies": {

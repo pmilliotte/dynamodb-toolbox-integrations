@@ -7,12 +7,14 @@ import { AssertionTestInput } from "./types";
 
 const SK_WITH_DYNAMODB_TOOLBOX_NAME = "lambdaHandledPut";
 const SK_WITH_DIRECT_INTEGRATION_NAME = "stepFunctionHandledPut";
+const BOOLEAN_VALUE = false;
 const PK = "Put";
 const input = {
   pk: PK,
   age: 3,
   count: 2,
   length: 1,
+  booleanInput: BOOLEAN_VALUE,
   sentencePrefixed: "sentencePrefixed",
   sentenceSuffixed: "sentenceSuffixed",
 };
@@ -49,6 +51,9 @@ export const testPutItem = ({ testCase, integ }: AssertionTestInput) => {
         },
         lngth: {
           N: withDynamodbToolbox.getAttString("Payload.lngth.N"),
+        },
+        booleanInput: {
+          BOOL: BOOLEAN_VALUE,
         },
         _ct: {
           S: Match.stringLikeRegexp(`${putHour}.{11}`),

@@ -1,18 +1,20 @@
 import { Entity } from "../types";
+import { TYPE_MAPPING } from "../types/Entity";
 import { getAttributeMaps } from "./attributes";
 
-export const aliasToMap = (
+export const unmarshallMap = (
   entity: Entity,
   jsonPath: string = "$"
 ): Record<string, unknown> => {
   const attributeMaps = getAttributeMaps(entity);
 
   const params = attributeMaps.reduce((tempParams, attributeMap) => {
-    const { alias } = entity.schema.attributes[attributeMap];
-
+    const { type } = entity.schema.attributes[attributeMap];
     return {
       ...tempParams,
-      [`${attributeMap}.$`]: `${jsonPath}.${alias ?? attributeMap}`,
+      [`${attributeMap}.$`]: `${jsonPath}.${attributeMap}.${
+        TYPE_MAPPING[type]
+      }`,
     };
   }, {} as Record<string, unknown>);
 
