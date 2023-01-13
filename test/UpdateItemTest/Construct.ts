@@ -32,7 +32,7 @@ export class UpdateItemStateMachine extends Construct {
     const stateMachine = new StateMachine(this, "UpdateStepFunction", {
       definition: chain.next(new Succeed(scope, "UpdateSuccessTask")),
       // Express needed for future get sync
-      stateMachineType: StateMachineType.EXPRESS,
+      // stateMachineType: StateMachineType.EXPRESS,
       logs: {
         destination: logGroup,
         level: LogLevel.ALL,
