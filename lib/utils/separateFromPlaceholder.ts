@@ -1,29 +1,35 @@
-import { Entity } from "../types";
-import { getAttributeMaps } from "./attributes";
-
 export const separateFromPlaceholder = (
-  entity: Entity
+  attributes: string[],
+  jsonPath: string,
+  removePlaceholder: boolean = false
 ): Record<string, string> => {
-  const params = getAttributeMaps(entity).reduce(
-    (temporaryParams, attributeMap) => ({
+  const params = attributes.reduce(
+    (temporaryParams, attribute) => ({
       ...temporaryParams,
-      [`${attributeMap}.placeholder`]: {
-        "value.$": `$.array[?(@.attributeMap=='${attributeMap}' && @.isPlaceholder == true)].nullValue`,
+      ...(removePlaceholder
+        ? {}
+        : {
+            [`${attribute}.placeholder`]: {
+              // 0 or 1
+              "length.$": `States.ArrayLength(${jsonPath}[?(@.attributeName=='${attribute}' && @.isPlaceholder == true)])`,
+              attributeName: attribute,
+              valueToConcat: [""],
+              separator: [""],
+            },
+          }),
+      [`${attribute}.null`]: {
         // 0 or 1
-        "length.$": `States.ArrayLength($.array[?(@.attributeMap=='${attributeMap}' && @.isPlaceholder == true)].nullValue)`,
-        attributeMap,
+        "length.$": `States.ArrayLength(${jsonPath}[?(@.attributeName=='${attribute}' && @.isNull == true)])`,
+        attributeName: attribute,
+        valueToConcat: [`${attribute}: null, `],
+        separator: [","],
       },
-      [`${attributeMap}.null`]: {
-        "value.$": `$.array[?(@.attributeMap=='${attributeMap}' && @.isNull == true)].null2Value`,
+      [`${attribute}.input`]: {
         // 0 or 1
-        "length.$": `States.ArrayLength($.array[?(@.attributeMap=='${attributeMap}' && @.isNull == true)].null2Value)`,
-        attributeMap,
-      },
-      [`${attributeMap}.input`]: {
-        "value.$": `$.array[?(@.attributeMap=='${attributeMap}' && @.isPlaceholder == false && @.isNull == false)].value`,
-        // 0 or 1
-        "length.$": `States.ArrayLength($.array[?(@.attributeMap=='${attributeMap}' && @.isPlaceholder == false && @.isNull == false)].value)`,
-        attributeMap,
+        "length.$": `States.ArrayLength(${jsonPath}[?(@.attributeName=='${attribute}' && @.isPlaceholder == false && @.isNull == false)])`,
+        attributeName: attribute,
+        "valueToConcat.$": `${jsonPath}[?(@.attributeName=='${attribute}')]['valueToConcat']`,
+        separator: [","],
       },
     }),
     {}

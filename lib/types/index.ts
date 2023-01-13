@@ -1,1 +1,2 @@
-export { Entity } from "./Entity";
+export * from "./Entity";
+export * from "./constructProps";

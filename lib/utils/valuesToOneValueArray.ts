@@ -1,11 +1,11 @@
-export const getFirstItem = (
+export const valuesToOneValueArray = (
   attributeNames: string[],
-  jsonPath: string
+  jsonPath: string = "$"
 ): Record<string, string> => {
   const params = attributeNames.reduce(
     (temporaryParams, attributeName) => ({
       ...temporaryParams,
-      [`${attributeName}.$`]: `${jsonPath}.${attributeName}[0]`,
+      [`${attributeName}.$`]: `States.Array(${jsonPath}['${attributeName}'])`,
     }),
     {}
   );
