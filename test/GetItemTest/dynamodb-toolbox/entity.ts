@@ -1,8 +1,8 @@
 import { Entity } from "dynamodb-toolbox";
-import { TestPutTable } from "./table";
+import { TestGetTable } from "./table";
 
-export const TestPutEntity = new Entity({
-  name: "Put",
+export const TestGetEntity = new Entity({
+  name: "Get",
   attributes: {
     pk: {
       partitionKey: true,
@@ -12,11 +12,10 @@ export const TestPutEntity = new Entity({
     age: { type: "number" },
     count: { type: "number", map: "cnt" },
     lngth: { type: "number", alias: "length" },
-    sentencePrefixed: { type: "string", prefix: "prefix" },
-    sentenceSuffixed: { type: "string", suffix: "suffix" },
+    // sentencePrefixed: { type: "string", prefix: "prefix" },
+    // sentenceSuffixed: { type: "string", prefix: "suffix" },
     nullInput: { type: "string" },
     nullInputSetToNull: { type: "string" },
-    booleanInput: { type: "boolean" },
   },
-  table: TestPutTable,
+  table: TestGetTable,
 });

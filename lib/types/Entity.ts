@@ -8,9 +8,14 @@ export type EntityAttributes = Record<
   { type: string; prefix: string; suffix: string }
 >;
 
+export const DYNAMODB_TYPES = ["string", "number", "boolean", "map"] as const;
+
+export type DynamodbType =
+  typeof DYNAMODB_TYPES[number];
+
 export const TYPE_MAPPING: Record<string, string> = {
   string: "S",
   number: "N",
-  boolean: "Bool",
+  boolean: "BOOL",
   map: "M",
 };

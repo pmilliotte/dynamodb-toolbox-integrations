@@ -4,7 +4,7 @@ import { TABLE_NAME } from "../types";
 
 const documentClient = new DocumentClient({ region: "eu-west-1" });
 
-export const TestPutTable = new Table({
+export const TestGetTable = new Table({
   name: TABLE_NAME,
   partitionKey: "pk",
   sortKey: "sk",
