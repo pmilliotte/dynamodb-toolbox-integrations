@@ -1,1 +1,2 @@
-export * from "./DynamodbToolboxGetItem";
+export * from "./DynamodbToolboxPutItem";
+export * from "./DynamodbToolboxUpdateItem";
