@@ -1,84 +1,92 @@
 import {
   ExpectedResult,
   InvocationType,
-  // Match,
+  Match,
 } from "@aws-cdk/integ-tests-alpha";
 import { AssertionTestInput } from "./types";
 
-const SK_WITH_DYNAMODB_TOOLBOX_NAME = "lambdaHandledGet";
-const PK = "Get";
-const input = {
+const PK = "Query";
+const input1_PK1 = {
   pk: PK,
+  sk: "popo",
+};
+const input2_PK1 = {
+  pk: PK,
+  sk: "papa",
 };
 
+const input1_PK2 = {
+  pk: "algues",
+  sk: "popo",
+};
+const input2_PK2 = {
+  pk: PK,
+  sk: "papa",
+};
+
+console.log(input2_PK1, input1_PK2, input2_PK2);
 export const testQueryItem = ({ testCase, integ }: AssertionTestInput) => {
-  const { withDynamodbToolbox } = invokeResources({
+  const { withDynamodbToolbox, withDirectIntegration } = invokeResources({
     testCase,
     integ,
   });
 
-  const putHour = new Date().toISOString().slice(0, 13);
-
-  // withDirectIntegration.expect(
-  //   ExpectedResult.objectLike({
-  //     status: "SUCCEEDED",
-  //     output: Match.serializedJson({
-  //       sk: SK_WITH_DYNAMODB_TOOLBOX_NAME,
-  //       pk: withDynamodbToolbox.getAttString("Payload.pk"),
-  //       // sentenceSuffixed: withDynamodbToolbox.getAttString(
-  //       //   "Payload.sentenceSuffixed"
-  //       // ),
-  //       // sentencePrefixed: withDynamodbToolbox.getAttString(
-  //       //   "Payload.sentencePrefixed"
-  //       // ),
-  //       age: withDynamodbToolbox.getAttString("Payload.age"),
-  //       count: withDynamodbToolbox.getAttString("Payload.count"),
-  //       length: withDynamodbToolbox.getAttString("Payload.length"),
-  //       created: Match.stringLikeRegexp(`${putHour}.{11}`),
-  //       modified: Match.stringLikeRegexp(`${putHour}.{11}`),
-  //       entity: withDynamodbToolbox.getAttString("Payload.entity"),
-  //     }),
-  //   })
-  // );
-
-  withDynamodbToolbox.expect(
+  withDirectIntegration.expect(
     ExpectedResult.objectLike({
-      StatusCode: "200",
+      status: "SUCCEEDED",
+      output: Match.serializedJson({
+        Count: 2,
+        ScannedCount: 2,
+        Items: [0, 1].map((item) => ({
+          sk: {
+            S: withDynamodbToolbox.getAttString(`Payload.Items.${item}.sk`),
+          },
+          pk: {
+            S: withDynamodbToolbox.getAttString(`Payload.Items.${item}.pk`),
+          },
+          _ct: {
+            S: withDynamodbToolbox.getAttString(
+              `Payload.Items.${item}.created`
+            ),
+          },
+          _md: {
+            S: withDynamodbToolbox.getAttString(
+              `Payload.Items.${item}.modified`
+            ),
+          },
+          _et: {
+            S: withDynamodbToolbox.getAttString(`Payload.Items.${item}.entity`),
+          },
+        })),
+      }),
     })
-    //   })
   );
 };
 
 const invokeResources = ({ testCase, integ }: AssertionTestInput) => {
-  const putItem = integ.assertions.invokeFunction({
-    functionName: testCase.putItemDynamodbToolboxFunctionName,
+  const putItems = integ.assertions.invokeFunction({
+    functionName: testCase.putItemsDynamodbToolboxFunctionName,
     invocationType: InvocationType.REQUEST_RESPONE,
-    payload: JSON.stringify({
-      sk: SK_WITH_DYNAMODB_TOOLBOX_NAME,
-      ...input,
-    }),
+    payload: JSON.stringify([input1_PK1, input2_PK1, input1_PK2, input2_PK2]),
   });
 
-  // const withDirectIntegration = putItem.next(
-  //   integ.assertions.awsApiCall("StepFunctions", "startSyncExecution", {
-  //     stateMachineArn: testCase.queryStateMachineArn,
-  //     input: JSON.stringify({
-  //       sk: SK_WITH_DYNAMODB_TOOLBOX_NAME,
-  //       pk: PK,
-  //     }),
-  //   })
-  // );
-
-  const withDynamodbToolbox = putItem.next(
-    integ.assertions.invokeFunction({
-      functionName: testCase.getItemDynamodbToolboxFunctionName,
-      invocationType: InvocationType.REQUEST_RESPONE,
-      payload: JSON.stringify({
-        sk: SK_WITH_DYNAMODB_TOOLBOX_NAME,
+  const withDirectIntegration = putItems.next(
+    //StartSyncExecution is not available for STANDARD workflows.
+    integ.assertions.awsApiCall("StepFunctions", "startSyncExecution", {
+      stateMachineArn: testCase.queryStateMachineArn,
+      input: JSON.stringify({
         pk: PK,
       }),
     })
   );
 
-  return { withDynamodbToolbox };
+  const withDynamodbToolbox = putItems.next(
+    integ.assertions.invokeFunction({
+      functionName: testCase.queryDynamodbToolboxFunctionName,
+      invocationType: InvocationType.REQUEST_RESPONE,
+      payload: JSON.stringify(PK),
+    })
+  );
+
+  return { withDynamodbToolbox, withDirectIntegration };
 };

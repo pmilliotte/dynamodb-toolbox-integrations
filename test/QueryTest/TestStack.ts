@@ -7,7 +7,11 @@ import { TABLE_NAME } from "./types";
 
 export class TestStack extends Stack {
   public putItemDynamodbToolboxFunctionName: string;
+  public putItemsDynamodbToolboxFunctionName: string;
+
   public getItemDynamodbToolboxFunctionName: string;
+  public queryDynamodbToolboxFunctionName: string;
+
   public queryStateMachineArn: string;
 
   constructor(scope: App, id: string) {
@@ -23,7 +27,11 @@ export class TestStack extends Stack {
 
     const {
       putItemDynamodbToolboxFunctionName,
+      putItemsDynamodbToolboxFunctionName,
+
       getItemDynamodbToolboxFunctionName,
+
+      queryDynamodbToolboxFunctionName,
     } = new TestUtils(this, "TestUtils", {
       tableArn,
       tableName,
@@ -33,7 +41,10 @@ export class TestStack extends Stack {
       getItemDynamodbToolboxFunctionName;
     this.putItemDynamodbToolboxFunctionName =
       putItemDynamodbToolboxFunctionName;
+    this.putItemsDynamodbToolboxFunctionName =
+      putItemsDynamodbToolboxFunctionName;
 
+    this.queryDynamodbToolboxFunctionName = queryDynamodbToolboxFunctionName;
     const { queryStateMachineArn } = new QueryStateMachine(
       this,
       "QueryTestConstruct",

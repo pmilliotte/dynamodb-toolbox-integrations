@@ -2,6 +2,9 @@ import { Construct } from "constructs";
 import { GetItemDynamodbToolbox } from "./GetItemDynamodbToolbox/Construct";
 import { GetItemSdk } from "./GetItemSdk/Construct";
 import { PutItemDynamodbToolbox } from "./PutItemDynamodbToolbox/Construct";
+import { PutItemsDynamodbToolbox } from "./PutItemsDynamodbToolbox/Construct";
+
+import { QueryDynamodbToolbox } from "./QueryDynamodbToolbox/Construct";
 import { UpdateItemDynamodbToolbox } from "./UpdateItemDynamodbToolbox/Construct";
 
 type TestUtilsProps = {
@@ -13,8 +16,11 @@ type TestUtilsProps = {
 export class TestUtils extends Construct {
   public getItemSdkFunctionName: string;
   public putItemDynamodbToolboxFunctionName: string;
+  public putItemsDynamodbToolboxFunctionName: string;
+
   public updateItemDynamodbToolboxFunctionName: string;
   public getItemDynamodbToolboxFunctionName: string;
+  public queryDynamodbToolboxFunctionName: string;
 
   constructor(
     scope: Construct,
@@ -38,6 +44,14 @@ export class TestUtils extends Construct {
     this.putItemDynamodbToolboxFunctionName =
       putItemDynamodbToolboxFunctionName;
 
+    const { functionName: putItemsDynamodbToolboxFunctionName } =
+      new PutItemsDynamodbToolbox(this, "PutItemsDynamodbToolbox", {
+        tableArn,
+        entityName,
+      });
+    this.putItemsDynamodbToolboxFunctionName =
+      putItemsDynamodbToolboxFunctionName;
+
     const { functionName: updateItemDynamodbToolboxFunctionName } =
       new UpdateItemDynamodbToolbox(this, "UpdateItemDynamodbToolbox", {
         tableArn,
@@ -53,5 +67,12 @@ export class TestUtils extends Construct {
       });
     this.getItemDynamodbToolboxFunctionName =
       getItemDynamodbToolboxFunctionName;
+
+    const { functionName: queryDynamodbToolboxFunctionName } =
+      new QueryDynamodbToolbox(this, "QueryDynamodbToolbox", {
+        tableArn,
+        entityName,
+      });
+    this.queryDynamodbToolboxFunctionName = queryDynamodbToolboxFunctionName;
   }
 }

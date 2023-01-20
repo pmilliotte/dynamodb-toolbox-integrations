@@ -1,4 +1,4 @@
-import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { LogGroup } from "aws-cdk-lib/aws-logs";
 import {
   LogLevel,
@@ -34,11 +34,11 @@ export class QueryStateMachine extends Construct {
     const stateMachine = new StateMachine(this, "QueryStepFunction", {
       definition: chain.next(new Succeed(scope, "QuerySuccessTask")),
       // Express needed for future get sync
-      // stateMachineType: StateMachineType.EXPRESS,
-      // logs: {
-      //   destination: logGroup,
-      //   level: LogLevel.ALL,
-      // },
+      stateMachineType: StateMachineType.EXPRESS,
+      logs: {
+        destination: logGroup,
+        level: LogLevel.ALL,
+      },
     });
     const { stateMachineArn } = stateMachine;
     this.queryStateMachineArn = stateMachineArn;

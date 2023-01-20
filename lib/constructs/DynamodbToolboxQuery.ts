@@ -17,7 +17,7 @@ export class DynamodbToolboxQuery extends Construct {
       KeyConditionExpression: "pk = :val",
       ExpressionAttributeValues: {
         ":val": {
-          S: "test",
+          S: "Query",
         },
       },
     };
@@ -44,6 +44,8 @@ export class DynamodbToolboxQuery extends Construct {
     const mapToAliasTask = new Pass(this, "MapToAlias", {
       parameters: mapToAlias(entity),
     });
+
+    //modifier tout ca
 
     this.chain = queryTask.next(new Pass(this, "hello"));
     // .next(mergeInputWithNullValuesTask)
