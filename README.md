@@ -1,4 +1,12 @@
-# Welcome to your CDK TypeScript Construct Library project
+# Welcome to dynamodb toolbox integrations
+
+INTRO -> Maxime
+
+COMMENT UTILISER
+
+
+
+## Welcome to your CDK TypeScript Construct Library project
 
 You should explore the contents of this project. It demonstrates a CDK Construct Library that includes a construct (`DynamodbToolboxIntegrationsLib`)
 which contains an Amazon SQS queue that is subscribed to an Amazon SNS topic.
@@ -56,3 +64,8 @@ This package only relates to entity definition based on `object` definitions.
 | format                        | :x:     | :x:                | :x:                                   |
 | partitionKey                  | :x:     | :white_check_mark: | :white_check_mark:                    |
 | sortKey                       | :x:     | :white_check_mark: | :white_check_mark:                    |
+
+
+
+## Query Item
+
