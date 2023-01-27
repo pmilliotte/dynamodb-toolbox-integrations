@@ -14,7 +14,7 @@ type QueryStateMachineProps = {
   tableArn: string;
 };
 
-export class QueryStateMachine extends Construct {
+export class StateMachineWithQueryTask extends Construct {
   public queryStateMachineArn: string;
 
   constructor(
@@ -24,16 +24,17 @@ export class QueryStateMachine extends Construct {
   ) {
     super(scope, id);
 
-    const { chain } = new DynamodbToolboxQuery(this, `Query`, {
+    const queryTask = new DynamodbToolboxQuery(this, `Query`, {
       // @ts-expect-error
       entity: TestQueryEntity,
+      tableArn,
       options: { attributes: ["sk"] },
     });
 
     const logGroup = new LogGroup(this, "QueryLogGroup");
 
     const stateMachine = new StateMachine(this, "QueryStepFunction", {
-      definition: chain.next(new Succeed(scope, "QuerySuccessTask")),
+      definition: queryTask.next(new Succeed(scope, "QuerySuccessTask")),
       // Express needed for future get sync
       // stateMachineType: StateMachineType.EXPRESS,
       // logs: {

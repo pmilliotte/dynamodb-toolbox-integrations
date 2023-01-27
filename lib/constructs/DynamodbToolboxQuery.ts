@@ -1,5 +1,17 @@
-import { Chain, JsonPath, Map, Pass } from "aws-cdk-lib/aws-stepfunctions";
-import { CallAwsService } from "aws-cdk-lib/aws-stepfunctions-tasks";
+import { PolicyStatement } from "aws-cdk-lib/aws-iam";
+import {
+  IntegrationPattern,
+  JsonPath,
+  Map,
+  StateMachine,
+  StateMachineType,
+  Succeed,
+  TaskInput,
+} from "aws-cdk-lib/aws-stepfunctions";
+import {
+  CallAwsService,
+  StepFunctionsStartExecution,
+} from "aws-cdk-lib/aws-stepfunctions-tasks";
 import { Construct } from "constructs";
 import {
   DynamodbToolboxIntegrationConstructProps,
@@ -8,14 +20,13 @@ import {
 import { getPartitionKeyAlias } from "../utils/attributes";
 import { FormatItem } from "./FormatItem";
 
-export class DynamodbToolboxQuery extends Construct {
-  public chain: Chain;
-
+export class DynamodbToolboxQuery extends StepFunctionsStartExecution {
   constructor(
     scope: Construct,
     id: string,
     {
       entity,
+      tableArn,
       options,
     }: DynamodbToolboxIntegrationConstructProps & {
       options: { attributes: string[] };
@@ -33,26 +44,41 @@ export class DynamodbToolboxQuery extends Construct {
       },
     };
 
-    super(scope, id);
-
-    const queryTask = new CallAwsService(this, "QueryTask", {
+    const queryTask = new CallAwsService(scope, "QueryTask", {
       service: "dynamodb",
       action: "query",
       iamResources: ["arn:aws:states:::aws-sdk:dynamodb:query"],
       parameters,
     });
 
-    const map = new Map(this, "MapItems", {
+    const map = new Map(scope, "MapItems", {
       itemsPath: JsonPath.stringAt("$.Items"),
     });
     map.iterator(
-      new FormatItem(this, "Format", { entity, attributes: options.attributes })
+      new FormatItem(scope, "Format", {
+        entity,
+        attributes: options.attributes,
+      })
     );
 
-    //modifier tout ca
+    const chain = queryTask.next(map);
 
-    this.chain = queryTask.next(map);
-    // .next(mergeInputWithNullValuesTask)
-    // .next(mapToAliasTask);
+    const stateMachine = new StateMachine(scope, "QueryStepFunction", {
+      definition: chain.next(new Succeed(scope, "QuerySuccessTask")),
+      stateMachineType: StateMachineType.EXPRESS,
+    });
+
+    stateMachine.addToRolePolicy(
+      new PolicyStatement({
+        actions: ["dynamodb:Query"],
+        resources: [tableArn],
+      })
+    );
+
+    super(scope, id, {
+      stateMachine,
+      integrationPattern: IntegrationPattern.REQUEST_RESPONSE,
+      input: TaskInput.fromJsonPathAt("$"),
+    });
   }
 }

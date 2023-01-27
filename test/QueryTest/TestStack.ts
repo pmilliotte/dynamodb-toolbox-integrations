@@ -1,7 +1,7 @@
 import { App, RemovalPolicy, Stack } from "aws-cdk-lib";
 import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
 import { TestUtils } from "../Utils/TestUtils";
-import { QueryStateMachine } from "./Construct";
+import { StateMachineWithQueryTask } from "./Construct";
 import { TestQueryEntity } from "./dynamodb-toolbox";
 import { TABLE_NAME } from "./types";
 
@@ -45,7 +45,7 @@ export class TestStack extends Stack {
       putItemsDynamodbToolboxFunctionName;
 
     this.queryDynamodbToolboxFunctionName = queryDynamodbToolboxFunctionName;
-    const { queryStateMachineArn } = new QueryStateMachine(
+    const { queryStateMachineArn } = new StateMachineWithQueryTask(
       this,
       "QueryTestConstruct",
       { tableArn }
