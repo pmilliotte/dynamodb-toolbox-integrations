@@ -5,26 +5,30 @@ import {
 } from "@aws-cdk/integ-tests-alpha";
 import { AssertionTestInput } from "./types";
 
-const PK = "Query";
-const input1_PK1 = {
-  pk: PK,
-  sk: "popo",
+const PK_TO_NOT_QUERY = "ToNotQuery";
+const PK_TO_QUERY = "ToQuery";
+const input = {
+  pk: PK_TO_QUERY,
+  age: 3,
+  count: 2,
+  length: 1,
 };
-const input2_PK1 = {
-  pk: PK,
-  sk: "papa",
-};
+const inputs = [
+  {
+    sk: "sk1",
+    ...input,
+  },
+  {
+    sk: "sk2",
+    ...input,
+  },
+  {
+    ...input,
+    pk: PK_TO_NOT_QUERY,
+    sk: "sk3",
+  },
+];
 
-const input1_PK2 = {
-  pk: "algues",
-  sk: "popo",
-};
-const input2_PK2 = {
-  pk: PK,
-  sk: "papa",
-};
-
-console.log(input2_PK1, input1_PK2, input2_PK2);
 export const testQueryItem = ({ testCase, integ }: AssertionTestInput) => {
   const { withDynamodbToolbox, withDirectIntegration } = invokeResources({
     testCase,
@@ -67,7 +71,7 @@ const invokeResources = ({ testCase, integ }: AssertionTestInput) => {
   const putItems = integ.assertions.invokeFunction({
     functionName: testCase.putItemsDynamodbToolboxFunctionName,
     invocationType: InvocationType.REQUEST_RESPONE,
-    payload: JSON.stringify([input1_PK1, input2_PK1, input1_PK2, input2_PK2]),
+    payload: JSON.stringify(inputs),
   });
 
   const withDirectIntegration = putItems.next(
@@ -75,7 +79,7 @@ const invokeResources = ({ testCase, integ }: AssertionTestInput) => {
     integ.assertions.awsApiCall("StepFunctions", "startSyncExecution", {
       stateMachineArn: testCase.queryStateMachineArn,
       input: JSON.stringify({
-        pk: PK,
+        pk: PK_TO_QUERY,
       }),
     })
   );
@@ -84,7 +88,7 @@ const invokeResources = ({ testCase, integ }: AssertionTestInput) => {
     integ.assertions.invokeFunction({
       functionName: testCase.queryDynamodbToolboxFunctionName,
       invocationType: InvocationType.REQUEST_RESPONE,
-      payload: JSON.stringify(PK),
+      payload: JSON.stringify(PK_TO_QUERY),
     })
   );
 

@@ -1,3 +1,3 @@
 export * from "./DynamodbToolboxPutItem";
 export * from "./DynamodbToolboxUpdateItem";
-export * from "./DynamodbToolboxQueryItem";
+export * from "./DynamodbToolboxQuery";

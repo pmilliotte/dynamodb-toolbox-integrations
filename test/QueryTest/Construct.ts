@@ -27,6 +27,7 @@ export class QueryStateMachine extends Construct {
     const { chain } = new DynamodbToolboxQuery(this, `Query`, {
       // @ts-expect-error
       entity: TestQueryEntity,
+      options: { attributes: ["sk"] },
     });
 
     const logGroup = new LogGroup(this, "QueryLogGroup");
@@ -34,11 +35,11 @@ export class QueryStateMachine extends Construct {
     const stateMachine = new StateMachine(this, "QueryStepFunction", {
       definition: chain.next(new Succeed(scope, "QuerySuccessTask")),
       // Express needed for future get sync
-      stateMachineType: StateMachineType.EXPRESS,
-      logs: {
-        destination: logGroup,
-        level: LogLevel.ALL,
-      },
+      // stateMachineType: StateMachineType.EXPRESS,
+      // logs: {
+      //   destination: logGroup,
+      //   level: LogLevel.ALL,
+      // },
     });
     const { stateMachineArn } = stateMachine;
     this.queryStateMachineArn = stateMachineArn;

@@ -1,8 +1,12 @@
-import { Chain, Pass } from "aws-cdk-lib/aws-stepfunctions";
+import { Chain, JsonPath, Map, Pass } from "aws-cdk-lib/aws-stepfunctions";
 import { CallAwsService } from "aws-cdk-lib/aws-stepfunctions-tasks";
 import { Construct } from "constructs";
-import { DynamodbToolboxIntegrationConstructProps } from "../types";
-import { mapToAlias } from "../utils/mapToAlias";
+import {
+  DynamodbToolboxIntegrationConstructProps,
+  TYPE_MAPPING,
+} from "../types";
+import { getPartitionKeyAlias } from "../utils/attributes";
+import { FormatItem } from "./FormatItem";
 
 export class DynamodbToolboxQuery extends Construct {
   public chain: Chain;
@@ -10,17 +14,25 @@ export class DynamodbToolboxQuery extends Construct {
   constructor(
     scope: Construct,
     id: string,
-    { entity }: DynamodbToolboxIntegrationConstructProps
+    {
+      entity,
+      options,
+    }: DynamodbToolboxIntegrationConstructProps & {
+      options: { attributes: string[] };
+    }
   ) {
+    const { type } = entity.schema.attributes[getPartitionKeyAlias(entity)];
+    const typeKey = `${TYPE_MAPPING[type]}.$`;
     const parameters = {
       TableName: entity.table.name,
       KeyConditionExpression: "pk = :val",
       ExpressionAttributeValues: {
         ":val": {
-          S: "Query",
+          [typeKey]: "$",
         },
       },
     };
+
     super(scope, id);
 
     const queryTask = new CallAwsService(this, "QueryTask", {
@@ -30,24 +42,16 @@ export class DynamodbToolboxQuery extends Construct {
       parameters,
     });
 
-    // We need to add a new Pass state to merge result from DB and null place holder
-    const mergeInputWithNullValuesTask = new Pass(
-      this,
-      "mergeInputWithNullValues",
-      {
-        parameters: {
-          "output.$": "States.JsonMerge($.nullInputValues, $.item, false)",
-        },
-      }
-    );
-
-    const mapToAliasTask = new Pass(this, "MapToAlias", {
-      parameters: mapToAlias(entity),
+    const map = new Map(this, "MapItems", {
+      itemsPath: JsonPath.stringAt("$.Items"),
     });
+    map.iterator(
+      new FormatItem(this, "Format", { entity, attributes: options.attributes })
+    );
 
     //modifier tout ca
 
-    this.chain = queryTask.next(new Pass(this, "hello"));
+    this.chain = queryTask.next(map);
     // .next(mergeInputWithNullValuesTask)
     // .next(mapToAliasTask);
   }

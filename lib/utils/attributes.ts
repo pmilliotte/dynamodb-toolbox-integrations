@@ -28,3 +28,15 @@ export const getKeyAliases = (entity: Entity) =>
     (attributeKey) =>
       entity.schema.attributes[attributeKey].alias ?? attributeKey
   );
+
+export const getPartitionKeyAlias = (entity: Entity) => {
+  const attributeKey = Object.keys(entity.schema.attributes).find(
+    (attributeKey) => !!entity.schema.attributes[attributeKey].partitionKey
+  );
+
+  if (attributeKey === undefined) {
+    throw new Error("Entity must have a partition key");
+  }
+
+  return entity.schema.attributes[attributeKey].alias ?? attributeKey;
+};
