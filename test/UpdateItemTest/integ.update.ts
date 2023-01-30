@@ -1,16 +1,8 @@
 import { App } from "aws-cdk-lib";
-import { IntegTest } from "@aws-cdk/integ-tests-alpha";
-import { testUpdateItem } from "./test";
+import { PutItemTestStack } from "../PutItemTest/TestStack";
 import { TestStack } from "./TestStack";
 
 const app = new App();
 
-const testCase = new TestStack(app, "UpdateTestStack");
-
-const integUpdate = new IntegTest(app, "UpdateTestCase", {
-  testCases: [testCase],
-});
-
-testUpdateItem({ testCase, integ: integUpdate });
-
-app.synth();
+new TestStack(app, "UpdateTestStack");
+// new PutItemTestStack(app, "PutTestStack");

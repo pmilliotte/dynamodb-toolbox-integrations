@@ -1,10 +1,6 @@
 {
-  "pk": "Put",
-  "sk": "stepFunctionHandledPut",
-  "age": 3,
-  "count": 2,
-  "length": 1,
-  "sentencePrefixed": "sentencePrefixed",
-  "sentenceSuffixed": "sentenceSuffixed",
-  "booleanInput": true
+  "pk": "PIKA",
+  "sk": "SIKA",
+  "age": 3213,
+  "name": "Pika Sika"
 }
