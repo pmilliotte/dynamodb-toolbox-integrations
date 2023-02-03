@@ -1,4 +1,8 @@
-import { IChainable, INextable, State } from "aws-cdk-lib/aws-stepfunctions";
+import {
+  IChainable,
+  INextable,
+  State,
+} from "aws-cdk-lib/aws-stepfunctions";
 import { Entity } from "../types";
 import { Pass } from "aws-cdk-lib/aws-stepfunctions";
 import { Construct } from "constructs";
@@ -19,7 +23,6 @@ import { mergeWithValueToConcat } from "../utils/mergeWithValueToConcat";
 export interface Props {
   entity: Entity;
   itemPath?: string;
-  attributes?: string[];
 }
 
 export class FormatItem implements IChainable {
@@ -27,11 +30,7 @@ export class FormatItem implements IChainable {
   readonly startState: State;
   readonly endStates: INextable[];
 
-  constructor(
-    scope: Construct,
-    id: string,
-    { entity, itemPath = "$", attributes }: Props
-  ) {
+  constructor(scope: Construct, id: string, { entity, itemPath = "$" }: Props) {
     const aliases = getAttributeAliases(entity);
     const maps = getAttributeMaps(entity);
 
@@ -126,6 +125,7 @@ export class FormatItem implements IChainable {
         parameters: {
           "uuid.$": "$.uuid",
           "arrays.$": getAllTransformedDataAsArray(aliases, "$.arrays"),
+          "notNullValue.$": "$.arrays.notNullValue[0]",
         },
       }
     );
@@ -135,6 +135,7 @@ export class FormatItem implements IChainable {
         "uuid.$": "$.uuid",
         object: getValuesToConcat(aliases, "$..arrays", "valueToConcat"),
         separator: getValuesToConcat(aliases, "$..arrays", "separator"),
+        "notNullValue.$": "$.notNullValue",
       },
     });
 
@@ -142,17 +143,13 @@ export class FormatItem implements IChainable {
       parameters: {
         object: getFirstItem(aliases, "$.object"),
         separator: getFirstItem(aliases, "$.separator"),
+        "notNullValue.$": "$.notNullValue",
       },
     });
 
     const concatTask = new Pass(scope, "Concat", {
       parameters: {
-        "object.$": concatAliases(
-          entity,
-          "$.object",
-          "$.separator",
-          attributes
-        ),
+        "object.$": concatAliases(entity, "$.object", "$.separator"),
       },
     });
 

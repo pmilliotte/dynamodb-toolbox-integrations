@@ -32,7 +32,9 @@ export const separateFromPlaceholder = (
         separator: [","],
       },
     }),
-    {}
+    {
+      "notNullValue.$": `${jsonPath}[?(@.isPlaceholder == false && @.isNull == false)]['valueToConcat']`,
+    }
   );
 
   return params;
