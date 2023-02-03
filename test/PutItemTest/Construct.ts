@@ -32,7 +32,7 @@ export class PutItemStateMachine extends Construct {
     const stateMachine = new StateMachine(this, "PutStepFunction", {
       definition: chain.next(new Succeed(scope, "PutSuccessTask")),
       // Express needed for future get sync
-      stateMachineType: StateMachineType.EXPRESS,
+      // stateMachineType: StateMachineType.EXPRESS,
       logs: {
         destination: logGroup,
         level: LogLevel.ALL,

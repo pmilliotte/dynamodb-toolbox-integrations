@@ -1,8 +1,7 @@
 import { App, RemovalPolicy, Stack } from "aws-cdk-lib";
 import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
-import { TestUtils } from "../Utils/TestUtils";
+import { UpdateItemDynamodbToolbox } from "../Utils/UpdateItemDynamodbToolbox/Construct";
 import { UpdateItemStateMachine } from "./Construct";
-import { TestUpdateEntity } from "./dynamodb-toolbox";
 import { TABLE_NAME } from "./types";
 
 export class TestStack extends Stack {
@@ -22,20 +21,10 @@ export class TestStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
-    const {
-      getItemSdkFunctionName,
-      putItemDynamodbToolboxFunctionName,
-      updateItemDynamodbToolboxFunctionName,
-    } = new TestUtils(this, "TestUtils", {
+    new UpdateItemDynamodbToolbox(this, "UpdateItemDynamodbToolbox", {
       tableArn,
       tableName,
-      entityName: TestUpdateEntity.name,
     });
-    this.getItemSdkFunctionName = getItemSdkFunctionName;
-    this.putItemDynamodbToolboxFunctionName =
-      putItemDynamodbToolboxFunctionName;
-    this.updateItemDynamodbToolboxFunctionName =
-      updateItemDynamodbToolboxFunctionName;
 
     const { updateItemStateMachineArn } = new UpdateItemStateMachine(
       this,

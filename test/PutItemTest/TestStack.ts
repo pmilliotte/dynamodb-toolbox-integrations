@@ -5,7 +5,7 @@ import { TestUtils } from "../Utils/TestUtils";
 import { TABLE_NAME } from "./types";
 import { TestPutEntity } from "./dynamodb-toolbox";
 
-export class TestStack extends Stack {
+export class PutItemTestStack extends Stack {
   public getItemSdkFunctionName: string;
   public putItemDynamodbToolboxFunctionName: string;
   public putItemStateMachineArn: string;
@@ -20,16 +20,6 @@ export class TestStack extends Stack {
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
     });
-
-    const { getItemSdkFunctionName, putItemDynamodbToolboxFunctionName } =
-      new TestUtils(this, "TestUtils", {
-        tableArn,
-        tableName,
-        entityName: TestPutEntity.name,
-      });
-    this.getItemSdkFunctionName = getItemSdkFunctionName;
-    this.putItemDynamodbToolboxFunctionName =
-      putItemDynamodbToolboxFunctionName;
 
     const { putItemStateMachineArn } = new PutItemStateMachine(
       this,

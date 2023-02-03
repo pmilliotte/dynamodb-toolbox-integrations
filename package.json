@@ -9,9 +9,12 @@
     "watch": "tsc -w",
     "test": "jest",
     "integ": "rm -rf dist; tsc; integ-runner --parallel-regions eu-west-1 --update-on-failed --directory dist/test --disable-update-workflow --force --verbose --profiles default --clean false",
-    "test-unit": "vitest run"
+    "test-unit": "vitest run",
+    "deploy": "rm -rf dist; tsc; cdk deploy --profile maximev"
   },
   "devDependencies": {
+    "@aws-cdk/integ-runner": "^2.56.0",
+    "@aws-cdk/integ-tests-alpha": "^2.56.0-alpha.0",
     "@aws-sdk/client-sfn": "^3.211.0",
     "@types/aws-lambda": "^8.10.108",
     "@types/jest": "^27.5.2",
@@ -21,6 +24,7 @@
     "@types/uuid": "^8.3.4",
     "aws-cdk": "^2.56",
     "aws-cdk-lib": "^2.56",
+    "aws-lambda": "^1.0.7",
     "constructs": "^10.1.124",
     "esbuild": "^0.15.12",
     "jest": "^27.5.1",
@@ -29,9 +33,6 @@
     "typescript": "~3.9.7",
     "vite": "^3.1.7",
     "vite-tsconfig-paths": "^3.5.0",
-    "@aws-cdk/integ-runner": "^2.56.0",
-    "@aws-cdk/integ-tests-alpha": "^2.56.0-alpha.0",
-    "aws-lambda": "^1.0.7",
     "vitest": "^0.23.1"
   },
   "peerDependencies": {
@@ -42,6 +43,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.223.0",
     "aws-sdk": "^2.1231.0",
-    "dynamodb-toolbox": "^0.4.3"
+    "dynamodb-toolbox": "^0.4.3",
+    "ts-node": "^10.9.1"
   }
 }

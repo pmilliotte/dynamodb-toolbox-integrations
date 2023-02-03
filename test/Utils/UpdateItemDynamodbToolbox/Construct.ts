@@ -8,14 +8,14 @@ import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 import * as path from "path";
 
-type UpdateItemDynamodbToolboxProps = { tableArn: string; entityName: string };
+type UpdateItemDynamodbToolboxProps = { tableArn: string; tableName: string };
 
 export class UpdateItemDynamodbToolbox extends Construct {
   public functionName: string;
   constructor(
     scope: Construct,
     id: string,
-    { tableArn, entityName }: UpdateItemDynamodbToolboxProps
+    { tableArn, tableName }: UpdateItemDynamodbToolboxProps
   ) {
     super(scope, id);
 
@@ -42,7 +42,7 @@ export class UpdateItemDynamodbToolbox extends Construct {
         // Get the file built
         entry: path.join(__dirname, `/handler.js`),
         role,
-        environment: { entityName },
+        environment: { tableName },
       }
     );
     this.functionName = functionName;
