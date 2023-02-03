@@ -19,7 +19,11 @@ import {
   SUPPORTED_ATTRIBUTE_TYPES,
   TYPE_MAPPING,
 } from "../types";
-import { getAttributeAliases, getPartitionKeyAlias } from "../utils/attributes";
+import {
+  getAttributeAliases,
+  getExpressionProperties,
+  getPartitionKeyAlias,
+} from "../utils/attributes";
 import { FormatItem } from "./FormatItem";
 
 type DynamodbToolboxQueryProps = {
@@ -52,6 +56,14 @@ export class DynamodbToolboxQuery extends CallAwsService {
       resources: [tableArn],
     });
 
+    const { ProjectionExpression, ExpressionAttributeNames } =
+      options.attributes === undefined
+        ? {
+            ProjectionExpression: undefined,
+            ExpressionAttributeNames: undefined,
+          }
+        : getExpressionProperties(entity, options.attributes);
+
     const queryTask = new CallAwsService(scope, "QueryTask", {
       service: "dynamodb",
       action: "query",
@@ -65,6 +77,8 @@ export class DynamodbToolboxQuery extends CallAwsService {
             [typeKey]: "$.stateInput",
           },
         },
+        ProjectionExpression,
+        ExpressionAttributeNames,
       },
     });
 
@@ -75,7 +89,6 @@ export class DynamodbToolboxQuery extends CallAwsService {
     map.iterator(
       new FormatItem(scope, "Format", {
         entity,
-        attributes: options.attributes,
       })
     );
 
