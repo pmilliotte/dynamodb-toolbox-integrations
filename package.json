@@ -1,6 +1,6 @@
 {
-  "name": "dynamodb-toolbox-sfn-integrations",
-  "version": "0.0-beta.0",
+  "name": "sfn-dynamodb-toolbox-integrations",
+  "version": "0.1.0-alpha",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "scripts": {
