@@ -45,7 +45,7 @@ export class DynamodbToolboxQuery extends CallAwsService {
           )
       )
     ) {
-      throw new Error("Entity has unsupported types");
+      console.warn("Entity has unsupported types");
     }
 
     const { type } = entity.schema.attributes[getPartitionKeyAlias(entity)];
