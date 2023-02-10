@@ -1,8 +1,8 @@
 {
-  "name": "dynamodb-toolbox-integrations-lib",
-  "version": "0.1.0",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "name": "dynamodb-toolbox-sfn-integrations",
+  "version": "0.0-beta.0",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
   "scripts": {
     "build": "tsc",
     "synth": "cdk synth --app \"npx ts-node --prefer-ts-exts test/integ.dynamodb-toolbox.ts\" testStack",
@@ -11,6 +11,9 @@
     "integ": "rm -rf dist; tsc; integ-runner --parallel-regions eu-west-1 --update-on-failed --directory dist/test --disable-update-workflow --force --verbose --profiles default --clean false",
     "test-unit": "vitest run"
   },
+  "files": [
+    "dist/lib/*"
+  ],
   "devDependencies": {
     "@aws-cdk/integ-runner": "^2.56.0",
     "@aws-cdk/integ-tests-alpha": "^2.56.0-alpha.0",
