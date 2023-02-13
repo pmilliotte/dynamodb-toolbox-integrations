@@ -23,7 +23,7 @@ import {
   getAttributeAliases,
   getExpressionProperties,
   getPartitionKeyAlias,
-} from "../utils/attributes";
+} from "../utils";
 import { FormatItem } from "./FormatItem";
 
 type DynamodbToolboxQueryProps = {
@@ -64,7 +64,7 @@ export class DynamodbToolboxQuery extends CallAwsService {
           }
         : getExpressionProperties(entity, options.attributes);
 
-    const queryTask = new CallAwsService(scope, "QueryTask", {
+    const queryTask = new CallAwsService(scope, "Query", {
       service: "dynamodb",
       action: "query",
       iamResources: ["arn:aws:states:::aws-sdk:dynamodb:query"],
@@ -84,6 +84,10 @@ export class DynamodbToolboxQuery extends CallAwsService {
 
     const map = new Map(scope, "MapItems", {
       itemsPath: JsonPath.stringAt("$.Items"),
+      parameters: {
+        "item.$": "$$.Map.Item.Value",
+        "uuid.$": "States.UUID()",
+      },
       resultPath: "$.Items",
     });
     map.iterator(

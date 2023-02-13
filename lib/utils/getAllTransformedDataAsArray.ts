@@ -1,25 +1,15 @@
 export const getAllTransformedDataAsArray = (
-  attributeNames: string[],
-  jsonPath: string,
+  jsonPath: string = "$",
   removePlaceholder: boolean = false
 ): string => {
   const beginningString = "States.Array(";
 
-  const params = attributeNames.reduce(
-    (temporaryString, attributeName, index) => {
-      const placeholder = removePlaceholder
-        ? ""
-        : `${jsonPath}['${attributeName}.placeholder'], `;
+  const placeholder = removePlaceholder
+    ? ""
+    : `${jsonPath}['placeholderProp'], `;
 
-      return temporaryString.concat(
-        placeholder,
-        `${jsonPath}['${attributeName}.input'], ${jsonPath}['${attributeName}.null']${
-          index === attributeNames.length - 1 ? "" : ","
-        } `
-      );
-    },
-    beginningString
+  return beginningString.concat(
+    placeholder,
+    `${jsonPath}['inputProp'], ${jsonPath}['nullProp'])`
   );
-
-  return params.concat(")");
 };

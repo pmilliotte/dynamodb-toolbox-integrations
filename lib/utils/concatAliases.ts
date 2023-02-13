@@ -1,25 +1,11 @@
-import { Entity } from "../types";
-import { getAttributeAliases } from "./attributes";
-
-export const concatAliases = (
-  entity: Entity,
-  jsonPath: string,
-  separatorPath: string,
-): string => {
-  const aliases = getAttributeAliases(entity);
-
-  // TODO: sort attributeNames with required attributes first
+export const concatAliases = (aliases: string[]): string => {
   const string = aliases.reduce((currentString, _) => {
-    return currentString.concat("{} {} ");
+    return currentString.concat("{} ");
   }, "States.Format(' ");
 
-  const format = aliases.reduce((currentString, attributeName, index) => {
-    const separator = `, ${separatorPath}['${attributeName}']`;
-
-    return currentString.concat(
-      `${separator}, ${jsonPath}['${attributeName}']`
-    );
-  }, string.concat(" {} {} {}', '{', $.notNullValue  "));
+  const format = aliases.reduce((currentString, _, index) => {
+    return currentString.concat(`, $.allValues[${index}]`);
+  }, string.concat(" {} {} {}', '{', $.notNullValues[0]  "));
 
   return format.concat(" , '}')");
 };
