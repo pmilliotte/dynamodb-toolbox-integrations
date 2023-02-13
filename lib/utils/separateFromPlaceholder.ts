@@ -1,41 +1,32 @@
 export const separateFromPlaceholder = (
-  attributes: string[],
-  jsonPath: string,
+  jsonPath: string = "$",
   removePlaceholder: boolean = false
-): Record<string, string> => {
-  const params = attributes.reduce(
-    (temporaryParams, attribute) => ({
-      ...temporaryParams,
-      ...(removePlaceholder
-        ? {}
-        : {
-            [`${attribute}.placeholder`]: {
-              // 0 or 1
-              "length.$": `States.ArrayLength(${jsonPath}[?(@.attributeName=='${attribute}' && @.isPlaceholder == true)])`,
-              attributeName: attribute,
-              valueToConcat: [""],
-              separator: [""],
-            },
-          }),
-      [`${attribute}.null`]: {
-        // 0 or 1
-        "length.$": `States.ArrayLength(${jsonPath}[?(@.attributeName=='${attribute}' && @.isNull == true)])`,
-        attributeName: attribute,
-        valueToConcat: [`${attribute}: null, `],
-        separator: [","],
-      },
-      [`${attribute}.input`]: {
-        // 0 or 1
-        "length.$": `States.ArrayLength(${jsonPath}[?(@.attributeName=='${attribute}' && @.isPlaceholder == false && @.isNull == false)])`,
-        attributeName: attribute,
-        "valueToConcat.$": `${jsonPath}[?(@.attributeName=='${attribute}')]['valueToConcat']`,
-        separator: [","],
-      },
-    }),
-    {
-      "notNullValue.$": `${jsonPath}[?(@.isPlaceholder == false && @.isNull == false)]['valueToConcat']`,
-    }
-  );
+): Record<string, unknown> => ({
+  ...(removePlaceholder
+    ? {}
+    : {
+        [`placeholderProp`]: {
+          // 0 or 1
+          "length.$": `States.ArrayLength(${jsonPath}[?(@.isPlaceholder == true)])`,
+          valueToConcat: "",
+          separator: "",
+          "uuid.$": "$.uuid",
+        },
+      }),
+  nullProp: {
+    // 0 or 1
+    "length.$": `States.ArrayLength(${jsonPath}[?(@.isNull == true)])`,
+    "valueToConcat.$": `States.Format('\"{}\": null, ', ${jsonPath}.alias)`,
+    separator: ",",
+    "uuid.$": "$.uuid",
+  },
+  [`inputProp`]: {
+    // 0 or 1
+    "length.$": `States.ArrayLength(${jsonPath}[?(@.isPlaceholder == false && @.isNull == false)])`,
 
-  return params;
-};
+    "valueToConcat.$": `States.Format('\"{}\": {}', $.alias, States.JsonToString($.value))`,
+    separator: ",",
+    "uuid.$": "$.uuid",
+  },
+  "alias.$": "$.alias",
+});
