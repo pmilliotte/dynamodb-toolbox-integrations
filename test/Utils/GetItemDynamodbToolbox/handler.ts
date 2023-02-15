@@ -10,10 +10,7 @@ export const main = async (
   if (process.env.entityName === undefined) {
     throw new Error("Env variable not defined");
   }
-  return (
-    await NAME_TO_ENTITY_MAPPING[process.env.entityName].get(
-      // @ts-expect-error
-      payload
-    )
-  ).Item;
+  // @ts-expect-error
+  return (await NAME_TO_ENTITY_MAPPING[process.env.entityName].get(payload))
+    .Item;
 };

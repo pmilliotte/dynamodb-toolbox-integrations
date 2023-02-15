@@ -26,7 +26,6 @@ export class StateMachineWithQueryTask extends Construct {
     super(scope, id);
 
     const queryTask = new DynamodbToolboxQuery(this, "QueryTest", {
-      // @ts-expect-error
       entity: TestQueryEntity,
       tableArn,
       options: { attributes },
