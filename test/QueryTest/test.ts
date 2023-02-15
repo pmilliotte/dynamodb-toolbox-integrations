@@ -37,10 +37,7 @@ export const testQueryItem = ({ testCase, integ }: AssertionTestInput) => {
     integ,
   });
 
-  const aliases = getAttributeAliases(
-    // @ts-expect-error
-    TestQueryEntity
-  );
+  const aliases = getAttributeAliases(TestQueryEntity);
 
   withDirectIntegration.expect(
     ExpectedResult.objectLike({

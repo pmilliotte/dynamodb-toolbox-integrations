@@ -5,7 +5,6 @@ import {
   Map,
   State,
 } from "aws-cdk-lib/aws-stepfunctions";
-import { Entity } from "../types";
 import { Pass } from "aws-cdk-lib/aws-stepfunctions";
 import { Construct } from "constructs";
 import {
@@ -18,18 +17,108 @@ import {
   concatAliases,
   hydrate,
 } from "../utils";
+import Entity, {
+  AttributeDefinitions,
+  Overlay,
+  ParsedAttributes,
+} from "dynamodb-toolbox/dist/classes/Entity";
+import { TableDef } from "dynamodb-toolbox/dist/classes/Table";
+import { PreventKeys } from "dynamodb-toolbox/dist/lib/utils";
+import type { O } from "ts-toolbelt";
 
-export interface Props {
-  entity: Entity;
+export interface FormatItemProps<
+  EntityTable extends TableDef,
+  EntityItemOverlay extends Overlay,
+  EntityCompositeKeyOverlay extends Overlay,
+  Name extends string,
+  AutoExecute extends boolean,
+  AutoParse extends boolean,
+  Timestamps extends boolean,
+  CreatedAlias extends string,
+  ModifiedAlias extends string,
+  TypeAlias extends string,
+  ReadonlyAttributeDefinitions extends PreventKeys<
+    AttributeDefinitions | Readonly<AttributeDefinitions>,
+    CreatedAlias | ModifiedAlias | TypeAlias
+  >,
+  WritableAttributeDefinitions extends AttributeDefinitions,
+  Attributes extends ParsedAttributes,
+  $Item extends any,
+  Item extends O.Object,
+  CompositePrimaryKey extends O.Object
+> {
+  entity: Entity<
+    EntityItemOverlay,
+    EntityCompositeKeyOverlay,
+    EntityTable,
+    Name,
+    AutoExecute,
+    AutoParse,
+    Timestamps,
+    CreatedAlias,
+    ModifiedAlias,
+    TypeAlias,
+    ReadonlyAttributeDefinitions,
+    WritableAttributeDefinitions,
+    Attributes,
+    $Item,
+    Item,
+    CompositePrimaryKey
+  >;
   itemPath?: string;
 }
 
-export class FormatItem implements IChainable {
+export class FormatItem<
+  EntityTable extends TableDef,
+  EntityItemOverlay extends Overlay,
+  EntityCompositeKeyOverlay extends Overlay,
+  Name extends string,
+  AutoExecute extends boolean,
+  AutoParse extends boolean,
+  Timestamps extends boolean,
+  CreatedAlias extends string,
+  ModifiedAlias extends string,
+  TypeAlias extends string,
+  ReadonlyAttributeDefinitions extends PreventKeys<
+    AttributeDefinitions | Readonly<AttributeDefinitions>,
+    CreatedAlias | ModifiedAlias | TypeAlias
+  >,
+  WritableAttributeDefinitions extends AttributeDefinitions,
+  Attributes extends ParsedAttributes,
+  $Item extends any,
+  Item extends O.Object,
+  CompositePrimaryKey extends O.Object
+> implements IChainable
+{
   readonly id: string;
   readonly startState: State;
   readonly endStates: INextable[];
 
-  constructor(scope: Construct, id: string, { entity, itemPath = "$" }: Props) {
+  constructor(
+    scope: Construct,
+    id: string,
+    {
+      entity,
+      itemPath = "$",
+    }: FormatItemProps<
+    EntityTable,
+      EntityItemOverlay,
+      EntityCompositeKeyOverlay,
+      Name,
+      AutoExecute,
+      AutoParse,
+      Timestamps,
+      CreatedAlias,
+      ModifiedAlias,
+      TypeAlias,
+      ReadonlyAttributeDefinitions,
+      WritableAttributeDefinitions,
+      Attributes,
+      $Item,
+      Item,
+      CompositePrimaryKey
+    >
+  ) {
     const aliases = getAttributeAliases(entity);
     const maps = getAttributeMaps(entity);
 
