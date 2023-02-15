@@ -6,6 +6,7 @@ import {
   JsonPath,
   LogLevel,
   Map,
+  Pass,
   StateMachine,
   StateMachineType,
 } from "aws-cdk-lib/aws-stepfunctions";
@@ -86,6 +87,7 @@ type DynamodbToolboxQueryProps<
     | "credentials"
     | "resultSelector"
     | "outputPath"
+    | "resultPath"
   >;
 
 export class DynamodbToolboxQuery<
@@ -211,6 +213,7 @@ export class DynamodbToolboxQuery<
       credentials,
       outputPath,
       resultSelector,
+      resultPath,
     } = props;
 
     const map = new Map(scope, "MapItems", {
@@ -220,8 +223,6 @@ export class DynamodbToolboxQuery<
         "uuid.$": "States.UUID()",
       },
       resultPath: "$.Items",
-      outputPath,
-      resultSelector,
     });
     map.iterator(
       new FormatItem(scope, "Format", {
@@ -229,7 +230,15 @@ export class DynamodbToolboxQuery<
       })
     );
 
-    const chain = queryTask.next(map);
+    const chain = queryTask.next(
+      map.next(
+        new Pass(scope, "OutputProcessing", {
+          outputPath,
+          parameters: resultSelector,
+          resultPath,
+        })
+      )
+    );
 
     const logGroup = new LogGroup(scope, "QueryStateMachineLogGroup", {
       retention: RetentionDays.ONE_DAY,
