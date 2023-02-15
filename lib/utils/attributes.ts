@@ -308,10 +308,26 @@ export const getExpressionProperties = <
 ) => {
   const maps = aliasToMap(entity, inputAliases);
 
-  if (maps.length === 0) {
+  const partitionKey = Object.keys(entity.schema.attributes).find(
+    (attributeKey) =>
+      entity.schema.attributes[attributeKey].partitionKey === true
+  );
+
+  if (partitionKey === undefined) {
     return {
       ProjectionExpression: undefined,
       ExpressionAttributeNames: undefined,
+    };
+  }
+
+  const PK_EXPRESSION_ATTRIBUTE_NAME = {
+    "#0": entity.schema.attributes[partitionKey].map ?? partitionKey,
+  };
+
+  if (maps.length === 0) {
+    return {
+      ProjectionExpression: undefined,
+      ExpressionAttributeNames: PK_EXPRESSION_ATTRIBUTE_NAME,
     };
   }
   return maps.reduce(
@@ -319,14 +335,17 @@ export const getExpressionProperties = <
       const separator = acc.ProjectionExpression === "" ? "" : ", ";
       return {
         ProjectionExpression: acc.ProjectionExpression.concat(
-          `${separator}#${index}`
+          `${separator}#${index + 1}`
         ),
         ExpressionAttributeNames: {
           ...acc.ExpressionAttributeNames,
-          [`#${index}`]: map,
+          [`#${index + 1}`]: map,
         },
       };
     },
-    { ProjectionExpression: "", ExpressionAttributeNames: {} }
+    {
+      ProjectionExpression: "",
+      ExpressionAttributeNames: PK_EXPRESSION_ATTRIBUTE_NAME,
+    }
   );
 };

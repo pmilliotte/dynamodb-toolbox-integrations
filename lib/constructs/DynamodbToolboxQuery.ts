@@ -191,7 +191,7 @@ export class DynamodbToolboxQuery<
       additionalIamStatements: [queryIamStatement],
       parameters: {
         TableName: entity.table.name,
-        KeyConditionExpression: "pk = :val",
+        KeyConditionExpression: "#0 = :val",
         ExpressionAttributeValues: {
           ":val": {
             [typeKey]: "$.stateInput",
