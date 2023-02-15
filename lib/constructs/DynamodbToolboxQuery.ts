@@ -84,6 +84,8 @@ type DynamodbToolboxQueryProps<
     | "timeout"
     | "heartbeat"
     | "credentials"
+    | "resultSelector"
+    | "outputPath"
   >;
 
 export class DynamodbToolboxQuery<
@@ -200,6 +202,17 @@ export class DynamodbToolboxQuery<
       },
     });
 
+    const {
+      comment,
+      inputPath,
+      parameters,
+      timeout,
+      heartbeat,
+      credentials,
+      outputPath,
+      resultSelector,
+    } = props;
+
     const map = new Map(scope, "MapItems", {
       itemsPath: JsonPath.stringAt("$.Items"),
       parameters: {
@@ -207,6 +220,8 @@ export class DynamodbToolboxQuery<
         "uuid.$": "States.UUID()",
       },
       resultPath: "$.Items",
+      outputPath,
+      resultSelector,
     });
     map.iterator(
       new FormatItem(scope, "Format", {
@@ -235,9 +250,6 @@ export class DynamodbToolboxQuery<
       actions: ["states:StartSyncExecution"],
       resources: [stateMachineArn],
     });
-
-    const { comment, inputPath, parameters, timeout, heartbeat, credentials } =
-      props;
 
     super(scope, id, {
       service: "sfn",
