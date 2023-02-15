@@ -25,6 +25,7 @@ import Entity, {
 import { TableDef } from "dynamodb-toolbox/dist/classes/Table";
 import { PreventKeys } from "dynamodb-toolbox/dist/lib/utils";
 import type { O } from "ts-toolbelt";
+import { intersection } from "lodash";
 
 export interface FormatItemProps<
   EntityTable extends TableDef,
@@ -66,6 +67,7 @@ export interface FormatItemProps<
     CompositePrimaryKey
   >;
   itemPath?: string;
+  options: { attributes?: string[] };
 }
 
 export class FormatItem<
@@ -100,8 +102,9 @@ export class FormatItem<
     {
       entity,
       itemPath = "$",
+      options: { attributes },
     }: FormatItemProps<
-    EntityTable,
+      EntityTable,
       EntityItemOverlay,
       EntityCompositeKeyOverlay,
       Name,
@@ -119,8 +122,22 @@ export class FormatItem<
       CompositePrimaryKey
     >
   ) {
-    const aliases = getAttributeAliases(entity);
-    const maps = getAttributeMaps(entity);
+    const allAliases = getAttributeAliases(entity);
+    const allMaps = getAttributeMaps(entity);
+
+    const aliases =
+      attributes === undefined
+        ? allAliases
+        : intersection(allAliases, attributes);
+    const maps =
+      attributes === undefined
+        ? allMaps
+        : intersection(
+            allMaps,
+            attributes.map(
+              (alias) => entity.schema.attributes[alias].map ?? alias
+            )
+          );
 
     const generatePlaceholderValuesTask = new Pass(
       scope,

@@ -226,6 +226,7 @@ export class DynamodbToolboxQuery<
     map.iterator(
       new FormatItem(scope, "Format", {
         entity,
+        options: { attributes: options.attributes },
       })
     );
 
