@@ -1,128 +1,87 @@
-# Welcome to your CDK TypeScript Construct Library project
+# Step Functions <> Dynamodb integrations with dynamodb-toolbox features
 
-You should explore the contents of this project. It demonstrates a CDK Construct Library that includes a construct (`DynamodbToolboxIntegrationsLib`)
-which contains an Amazon SQS queue that is subscribed to an Amazon SNS topic.
+A set of constructs to leverage [dynamodb-toolbox](https://github.com/jeremydaly/dynamodb-toolbox) features in a Step Functions <> Dynamodb direct integration.
 
-The construct defines an interface (`DynamodbToolboxIntegrationsLibProps`) to configure the visibility timeout of the queue.
+### Why ? 
 
-## Useful commands
+AWS direct integrations are great for shipping less custom code, thus less bugs 🐞 in your CDK applications. They enable communication with Dynamodb inside a state machine, rather than using a lambda as a service integration task and use your favorite tool such as dynamodb-toolbox to communicate with Dynamodb for simple requests like GetItem, PutItem, UpdateItem or Query.
 
-- `npm run build` compile typescript to js
-- `npm run watch` watch for changes and compile
-- `npm run test` perform the jest unit tests
+However, functionless is not always an option and you may already be relying on dynamodb-toolbox in some of your lambdas. In this case, implementing a Step Functions <> Dynamodb direct integration turns out to be painful because you would have to implement dynamodb-toolbox features yourself (e.g. generate created / modified / entity properties, or handle alias and maps).
 
-## Available DynamoDB-toolbox entity features
+### How ?
 
-### Entity definitions
+This library aims at getting the best developer experience :computer: while benefiting from dynamodb-toolbox features in Step Functions <> Dynamodb direct integrations. To query entity items inside a state machine, define your task with the Query construct at build time, and pass the partition key value at run time, just like you would do in a lambda with dynamodb-toolbox.
 
-These entity properties are taken into account when doing the following operations:
+```typescript
+import { StateMachine } from "aws-cdk-lib/aws-stepfunctions";
+import { DynamodbToolboxQuery } from "sfn-dynamodb-toolbox-integrations";
 
-| DDB-toolbox entity options | GetItem | UpdateItem | PutItem | Query              |
-| -------------------------- | ------- | ---------- | ------- | ------------------ |
-| attributes                 | :x:     | :x:        | :x:     | :x:                |
-| autoExecute                | :x:     | :x:        | :x:     | :x:                |
-| autoParse                  | :x:     | :x:        | :x:     | :x:                |
-| created                    | :x:     | :x:        | :x:     | :white_check_mark: |
-| createdAlias               | :x:     | :x:        | :x:     | :x:                |
-| modified                   | :x:     | :x:        | :x:     | :white_check_mark: |
-| modifiedAlias              | :x:     | :x:        | :x:     | :x:                |
-| name                       | :x:     | :x:        | :x:     | :white_check_mark: |
-| table                      | :x:     | :x:        | :x:     | :white_check_mark: |
-| timestamps                 | :x:     | :x:        | :x:     | :white_check_mark: |
-| typeAlias                  | :x:     | :x:        | :x:     | :x:                |
-| typeHidden                 | :x:     | :x:        | :x:     | :x:                |
+// Define your query state
+const queryTask = new DynamodbToolboxQuery(this, "QueryTask", {
+  entity: DynamodbToolboxEntityToQuery,
+  tableArn: "arn:aws:dynamodb:us-east-2:123456789012:table/myDynamoDBTable",
+  // Attributes to retrieve should be entity aliases
+  options: { attributes: ["id", "created"] },
+});
 
-### Entity attributes
-
-This package only relates to entity definition based on `object` definitions.
-
-> :warning: Entity definitions by string or array are not supported.
-
-| DDB-toolbox attribute feature | GetItem | UpdateItem | PutItem | Query                                 |
-| ----------------------------- | ------- | ---------- | ------- | ------------------------------------- |
-| alias                         | :x:     | :x:        | :x:     | :x:                                   |
-| coerce                        | :x:     | :x:        | :x:     | :x:                                   |
-| default                       | :x:     | :x:        | :x:     | :white_check_mark: for `static value` |
-| delimiter                     | :x:     | :x:        | :x:     | :x:                                   |
-| dependsOn                     | :x:     | :x:        | :x:     | :x:                                   |
-| format                        | :x:     | :x:        | :x:     | :x:                                   |
-| hidden                        | :x:     | :x:        | :x:     | :x:                                   |
-| map                           | :x:     | :x:        | :x:     | :x:                                   |
-| onUpdate                      | :x:     | :x:        | :x:     | :x:                                   |
-| prefix                        | :x:     | :x:        | :x:     | :x:                                   |
-| partitionKey                  | :x:     | :x:        | :x:     | :white_check_mark:                    |
-| required                      | :x:     | :x:        | :x:     | :white_check_mark:                    |
-| save                          | :x:     | :x:        | :x:     | :x:                                   |
-| setType                       | :x:     | :x:        | :x:     | :x:                                   |
-| sortKey                       | :x:     | :x:        | :x:     | :white_check_mark:                    |
-| suffix                        | :x:     | :x:        | :x:     | :x:                                   |
-| transform                     | :x:     | :x:        | :x:     | :x:                                   |
-| type                          | :x:     | :x:        | :x:     | `string`, `number`, `boolean`         |
-
-### Query
-
-The Query operation finds items based on primary key values. You can query any entity that has a composite primary key (a partition key and a sort key).
-
-### How to use Query
-
-You must provide the name of the partition key attribute and a single value for that attribute. Query returns all items with that partition key value.
-
-Initialize your Query construct with a name and en entity.
-
-1/ Define your entity (check supported entity attributes)
-
-```
-import { Entity } from "dynamodb-toolbox";
-const MyEntity = new Entity({
-    name: "Query",
-    attributes: {
-        pk: {
-            partitionKey: true,
-            type: "string",
-        },
-        sk: { sortKey: true, type: "string" },
-        },
-    table: TestQueryTable,
-    });
-```
-
-2- In the constructor of the Construct where you want to use the query command, initialize your Query construct with a name and en entity
-
-```
-import { App, Stack } from '@aws-cdk/core';
-import {DynamodbToolboxQuery} from 'dynamodb-toolbox-integrations';
-
-const app = new App();
-const stack = new Stack(app);
-
-const { chain } = new DynamodbToolboxQuery(stack, 'nameId',
-    entity: MyEntity,
-    tableArn: MyTableArn,
-    });
-```
-
-The chain can then be used in the definition of a state machine.
-
-```
-import { LogGroup } from "aws-cdk-lib/aws-logs";
-import {
-  StateMachine,
-  Succeed,
-} from "aws-cdk-lib/aws-stepfunctions";
-
-
-const stateMachine = new StateMachine(stack, "QueryStepFunction", {
-    definition: chain.next(new Succeed(scope, "QuerySuccessTask")),
+// And use it in your step function
+const stateMachine = new StateMachine(this, "QueryStateMachine", {
+  definition: queryTask,
 });
 ```
 
-Give your stateMachine the rights to query your table:
+NB: This library is in alpha for its current limitations, however it's already being used in production in some projects. The main limitation being: :warning: dynamodb-entities must be flat (i.e. no object or array properties).
 
-```
-stateMachine.addToRolePolicy(
-      new PolicyStatement({
-        actions: ["dynamodb:Query"],
-        resources: [tableArn],
-      })
-    );
-```
+We have released the Query construct while PutItem, UpdateItem and GetItem constructs are under active development.
+
+## Available DynamoDB-toolbox entity features
+
+### Entity definition
+
+These entity properties are currently handled:
+
+| DDB-toolbox entity options    | GetItem    | UpdateItem | PutItem    | Query                                   |
+| ----------------------------- | ---------- | ---------- | ---------- | --------------------------------------- |
+| attributes                    | :computer: | :computer: | :computer: | :warning: see below                     |
+| autoExecute                   | :computer: | :computer: | :computer: | :x: `true` (default)                    |
+| autoParse                     | :computer: | :computer: | :computer: | :x: `true` (default)                    |
+| created                       | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| createdAlias                  | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| modified                      | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| modifiedAlias                 | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| name                          | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| table                         | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| timestamps                    | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| typeAlias                     | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| typeHidden                    | :computer: | :computer: | :computer: | :x: `false` (default)                   |
+
+:computer:: under development
+
+### Entity attributes
+
+These entity attribute properties are currently handled:
+
+| DDB-toolbox attribute feature | GetItem    | UpdateItem | PutItem    | Query                                   |
+| ----------------------------- | ---------- | ---------- | ---------- | --------------------------------------- |
+| alias                         | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| coerce                        | :computer: | :computer: | :computer: | :x: (default)                           |
+| default                       | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| delimiter                     | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| dependsOn                     | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| format                        | :computer: | :computer: | :computer: | :x:                                     |
+| hidden                        | :computer: | :computer: | :computer: | :x: `false` (default)                   |
+| map                           | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| onUpdate                      | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| prefix                        | :computer: | :computer: | :computer: | :x:                                     |
+| suffix                        | :computer: | :computer: | :computer: | :x:                                     |
+| partitionKey                  | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| sortKey                       | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| required                      | :computer: | :computer: | :computer: | :white_check_mark:                      |
+| save                          | :computer: | :computer: | :computer: | :x: `true` (default)                    |
+| setType                       | :computer: | :computer: | :computer: | :x:                                     |
+| transform                     | :computer: | :computer: | :computer: | :x:                                     |
+| type                          | :computer: | :computer: | :computer: | :warning: `string`, `number`, `boolean` |
+
+:computer:: under development
+
+
