@@ -179,12 +179,7 @@ export class DynamodbToolboxQuery<
     });
 
     const { ProjectionExpression, ExpressionAttributeNames } =
-      options.attributes === undefined
-        ? {
-            ProjectionExpression: undefined,
-            ExpressionAttributeNames: undefined,
-          }
-        : getExpressionProperties(entity, options.attributes);
+      getExpressionProperties(entity, options.attributes);
 
     const queryTask = new CallAwsService(scope, "Query", {
       service: "dynamodb",
