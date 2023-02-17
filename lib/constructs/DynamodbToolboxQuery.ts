@@ -15,12 +15,8 @@ import {
   CallAwsServiceProps,
 } from "aws-cdk-lib/aws-stepfunctions-tasks";
 import { Construct } from "constructs";
-import { SUPPORTED_ATTRIBUTE_TYPES, TYPE_MAPPING } from "../types";
-import {
-  getAttributeAliases,
-  getExpressionProperties,
-  getPartitionKeyAlias,
-} from "../utils";
+import { TYPE_MAPPING } from "../types";
+import { getExpressionProperties, getPartitionKeyAlias } from "../utils";
 import { FormatItem } from "./FormatItem";
 import Entity, {
   AttributeDefinitions,
@@ -34,6 +30,7 @@ import Entity, {
 import { TableDef } from "dynamodb-toolbox/dist/classes/Table";
 import { If, PreventKeys } from "dynamodb-toolbox/dist/lib/utils";
 import type { A, O } from "ts-toolbelt";
+import { validateEntityTypes } from "../utils/validation/validateEntityTypes";
 
 type DynamodbToolboxQueryProps<
   EntityTable extends TableDef,
@@ -159,16 +156,7 @@ export class DynamodbToolboxQuery<
       CompositePrimaryKey
     >
   ) {
-    if (
-      getAttributeAliases(entity).find(
-        (alias) =>
-          !SUPPORTED_ATTRIBUTE_TYPES.includes(
-            entity.schema.attributes[alias].type
-          )
-      )
-    ) {
-      console.warn("Entity has unsupported types");
-    }
+    validateEntityTypes(entity);
 
     const { type } = entity.schema.attributes[getPartitionKeyAlias(entity)];
     const typeKey = `${TYPE_MAPPING[type]}.$`;
