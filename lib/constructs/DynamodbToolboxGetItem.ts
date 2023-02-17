@@ -11,7 +11,6 @@ import {
 import {
   CallAwsService,
   CallAwsServiceProps,
-  DynamoGetItem,
 } from "aws-cdk-lib/aws-stepfunctions-tasks";
 import { Construct } from "constructs";
 import { keysAliasToMap } from "../utils/keysAliasToMap";
@@ -157,10 +156,22 @@ export class DynamodbToolboxGetItem<
   ) {
     validateEntityTypes(entity);
 
+    const getItemIamStatement = new PolicyStatement({
+      actions: ["dynamodb:GetItem"],
+      resources: [tableArn],
+    });
+
     // TODO: handle attributes (cf query)
-    const getItemTask = new DynamoGetItem(scope, "GetItemTask", {
-      table: Table.fromTableArn(scope, "Table", tableArn),
-      key: keysAliasToMap(entity),
+    const getItemTask = new CallAwsService(scope, "Query", {
+      service: "dynamodb",
+      action: "getItem",
+      iamResources: ["arn:aws:states:::dynamodb:getItem"],
+      additionalIamStatements: [getItemIamStatement],
+      parameters: {
+        TableName: entity.table.name,
+        // TODO: use KeyConditionExpression for weird key names
+        Key: keysAliasToMap(entity),
+      },
     });
 
     const {
