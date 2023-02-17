@@ -66,7 +66,8 @@ export interface FormatItemProps<
     Item,
     CompositePrimaryKey
   >;
-  itemPath?: string;
+  inputPath?: string;
+  resultPath?: string;
   options: { attributes?: string[] };
 }
 
@@ -101,7 +102,8 @@ export class FormatItem<
     id: string,
     {
       entity,
-      itemPath = "$",
+      inputPath = "$",
+      resultPath,
       options: { attributes },
     }: FormatItemProps<
       EntityTable,
@@ -143,11 +145,13 @@ export class FormatItem<
       scope,
       "GeneratePlaceholderValues",
       {
+        inputPath,
         parameters: {
           "item.$": "$.item",
           "uuid.$": "$.uuid",
           placeholderValues: getPlaceholderValuesWithType(maps, entity),
         },
+        resultPath,
       }
     );
 
@@ -155,29 +159,37 @@ export class FormatItem<
       scope,
       "MergeWithPlaceholderValues",
       {
+        inputPath,
         parameters: {
           "output.$": "States.JsonMerge($.placeholderValues, $.item, false)",
           "uuid.$": "$.uuid",
         },
+        resultPath,
       }
     );
 
     const hydrateTask = new Pass(scope, "Hydrate", {
+      inputPath,
       parameters: {
         output: hydrate(maps, entity, "$.output"),
         "uuid.$": "$.uuid",
       },
+      resultPath,
     });
 
     const aliasToObjectTask = new Pass(scope, "AliasToObject", {
+      inputPath,
       parameters: valueToObject(),
+      resultPath,
     });
 
     const separateFromPlaceholderTask = new Pass(
       scope,
       "SeparateFromPlaceholder",
       {
+        inputPath,
         parameters: separateFromPlaceholder(),
+        resultPath,
       }
     );
 
@@ -185,43 +197,62 @@ export class FormatItem<
       scope,
       "GetAllTransformedDataAsArray",
       {
+        inputPath,
         parameters: {
           "alias.$": "$.alias",
           "arrays.$": getAllTransformedDataAsArray(),
         },
+        resultPath,
       }
     );
 
     const getValuesToConcatTask = new Pass(scope, "GetValuesToConcat", {
+      inputPath,
       parameters: {
         "object.$": "$..arrays[?(@.length == 1)]",
       },
+      resultPath,
     });
 
     const getFirstItemTask = new Pass(scope, "GetFirstItem", {
+      inputPath,
       parameters: {
         "valueToConcat.$":
           "States.Format('{} {}', $.object[0].separator, $.object[0].valueToConcat)",
         "separator.$": "$.object[0].separator",
         "value.$": "$.object[0].valueToConcat",
       },
+      resultPath,
     });
 
     const concatTask = new Pass(scope, "Concat", {
+      inputPath,
       parameters: {
         "object.$": concatAliases(aliases),
       },
+      resultPath,
     });
 
     const toJsonTask = new Pass(scope, "ToJson", {
+      inputPath,
       parameters: {
         "object.$": "States.StringToJson($.object)",
       },
       outputPath: "$.object",
     });
 
+    const lastTask =
+      resultPath === undefined
+        ? toJsonTask
+        : toJsonTask.next(
+            new Pass(scope, "OutputProcessing", {
+              inputPath: `${inputPath}.object`,
+              resultPath,
+            })
+          );
+
     const mapOnMapsTask = new Map(scope, "MapOnMaps", {
-      itemsPath: JsonPath.stringAt("$.output"),
+      itemsPath: JsonPath.stringAt(`${inputPath}.output`),
       resultSelector: {
         "notNullValues.$": "$.[?(@.valueToConcat != ' ')].value",
         "allValues.$": "$.*.valueToConcat",
@@ -240,10 +271,10 @@ export class FormatItem<
       .next(hydrateTask)
       .next(mapOnMapsTask)
       .next(concatTask)
-      .next(toJsonTask);
+      .next(lastTask);
 
     this.startState = generatePlaceholderValuesTask;
     this.id = id;
-    this.endStates = [toJsonTask];
+    this.endStates = [lastTask];
   }
 }
