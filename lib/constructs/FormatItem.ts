@@ -245,7 +245,7 @@ export class FormatItem<
       resultPath === undefined
         ? toJsonTask
         : toJsonTask.next(
-            new Pass(scope, "OutputProcessing", {
+            new Pass(scope, "LastTaskProcessing", {
               inputPath: `${inputPath}.object`,
               resultPath,
             })
