@@ -162,7 +162,7 @@ export class DynamodbToolboxGetItem<
     });
 
     // TODO: handle attributes (cf query)
-    const getItemTask = new CallAwsService(scope, "Query", {
+    const getItemTask = new CallAwsService(scope, "GetItem", {
       service: "dynamodb",
       action: "getItem",
       iamResources: ["arn:aws:states:::dynamodb:getItem"],
@@ -172,6 +172,7 @@ export class DynamodbToolboxGetItem<
         // TODO: use KeyConditionExpression for weird key names
         Key: keysAliasToMap(entity),
       },
+      resultSelector: { "item.$": "$.Item", "uuid.$": "States.UUID()" },
     });
 
     const {
@@ -188,8 +189,6 @@ export class DynamodbToolboxGetItem<
 
     const formatItem = new FormatItem(scope, "Format", {
       entity,
-      inputPath: "$.Item",
-      resultPath: "$.Item",
       options: { attributes: options.attributes },
     });
 
@@ -232,9 +231,7 @@ export class DynamodbToolboxGetItem<
       inputPath,
       parameters: {
         StateMachineArn: stateMachineArn,
-        Input: {
-          "stateInput.$": parameters ?? "$",
-        },
+        Input: parameters ?? { stateInput: "$" },
       },
       resultSelector: {
         "Output.$": "States.StringToJson($.Output)",

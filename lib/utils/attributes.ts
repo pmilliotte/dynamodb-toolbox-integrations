@@ -142,19 +142,23 @@ export const getKeyAliases = <
     Item,
     CompositePrimaryKey
   >
-) =>
-  uniq(
-    Object.keys(entity.schema.attributes)
-      .filter(
-        (attributeKey) =>
-          !!entity.schema.attributes[attributeKey].partitionKey ||
-          !!entity.schema.attributes[attributeKey].sortKey
-      )
-      .map(
-        (attributeKey) =>
-          entity.schema.attributes[attributeKey].alias ?? attributeKey
-      )
+): string[] => {
+  const partitionAndSortAttributeKeys = Object.keys(
+    entity.schema.attributes
+  ).filter(
+    (attributeKey) =>
+      !!entity.schema.attributes[attributeKey].partitionKey ||
+      !!entity.schema.attributes[attributeKey].sortKey
   );
+  const uniquePartitionAndSortAttributeKeysAliases = uniq(
+    partitionAndSortAttributeKeys.map(
+      (attributeKey) =>
+        entity.schema.attributes[attributeKey].alias ?? attributeKey
+    )
+  );
+
+  return uniquePartitionAndSortAttributeKeysAliases;
+};
 
 export const getPartitionKeyAlias = <
   EntityTable extends TableDef,

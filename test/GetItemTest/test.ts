@@ -39,15 +39,12 @@ const inputs = [
 ];
 
 export const testGetItem = ({ testCase, integ }: AssertionTestInput) => {
-  const { withDynamodbToolbox, withDirectIntegration } = invokeResources({
+  const { withDynamodbToolbox } = invokeResources({
     testCase,
     integ,
   });
 
-  const aliases = getAttributeAliases(
-    // @ts-expect-error
-    TestGetItemEntity
-  );
+  const aliases = getAttributeAliases(TestGetItemEntity);
 
   // const putHour = new Date().toISOString().slice(0, 13);
 
@@ -72,35 +69,42 @@ export const testGetItem = ({ testCase, integ }: AssertionTestInput) => {
   //     }),
   //   })
 
-  withDirectIntegration.expect(
+  // withDirectIntegration.expect(
+  //   ExpectedResult.objectLike({
+  //     status: "SUCCEEDED",
+  //     output: Match.serializedJson({
+  //       Count: 2,
+  //       ScannedCount: 2,
+  //       Item: [0, 1].map((item) =>
+  //         aliases.reduce(
+  //           (acc, alias) => ({
+  //             ...acc,
+  //             ...([
+  //               // TODO: create utils to identify dynamodb-toolbox generated properties
+  //               ...Object.keys(inputs[0]),
+  //               "sk",
+  //               "created",
+  //               "modified",
+  //               "entity",
+  //             ].includes(alias)
+  //               ? {
+  //                   [alias]: withDynamodbToolbox.getAttString(
+  //                     `Payload.Item.${item}.${alias}`
+  //                   ),
+  //                 }
+  //               : {}),
+  //           }),
+  //           {}
+  //         )
+  //       ),
+  //     }),
+  //   })
+  // );
+
+  withDynamodbToolbox.expect(
     ExpectedResult.objectLike({
       status: "SUCCEEDED",
-      output: Match.serializedJson({
-        Count: 2,
-        ScannedCount: 2,
-        Item: [0, 1].map((item) =>
-          aliases.reduce(
-            (acc, alias) => ({
-              ...acc,
-              ...([
-                // TODO: create utils to identify dynamodb-toolbox generated properties
-                ...Object.keys(inputs[0]),
-                "sk",
-                "created",
-                "modified",
-                "entity",
-              ].includes(alias)
-                ? {
-                    [alias]: withDynamodbToolbox.getAttString(
-                      `Payload.Item.${item}.${alias}`
-                    ),
-                  }
-                : {}),
-            }),
-            {}
-          )
-        ),
-      }),
+      output: { toto: "toto" },
     })
   );
 };

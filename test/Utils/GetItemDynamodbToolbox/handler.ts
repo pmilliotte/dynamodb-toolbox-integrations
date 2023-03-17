@@ -1,7 +1,9 @@
+import { TestGetItemEntity } from "../../GetItemTest/dynamodb-toolbox";
 import { TestQueryEntity } from "../../QueryTest/dynamodb-toolbox";
 
 const NAME_TO_ENTITY_MAPPING = {
   [TestQueryEntity.name]: TestQueryEntity,
+  [TestGetItemEntity.name]: TestGetItemEntity,
 };
 
 export const main = async (

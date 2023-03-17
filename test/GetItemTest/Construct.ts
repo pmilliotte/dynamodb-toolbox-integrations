@@ -25,8 +25,7 @@ export class StateMachineWithGetItemTask extends Construct {
   ) {
     super(scope, id);
 
-    const getItemTask = new DynamodbToolboxGetItem(this, `GetItem`, {
-      // @ts-expect-error
+    const getItemTask = new DynamodbToolboxGetItem(this, `GetItemTest`, {
       entity: TestGetItemEntity,
       tableArn,
       options: { attributes },
