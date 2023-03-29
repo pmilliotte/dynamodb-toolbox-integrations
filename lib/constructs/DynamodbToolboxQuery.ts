@@ -2,6 +2,8 @@ import { RemovalPolicy } from "aws-cdk-lib";
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { LogGroup, RetentionDays } from "aws-cdk-lib/aws-logs";
 import {
+  Choice,
+  Condition,
   IntegrationPattern,
   JsonPath,
   LogLevel,
@@ -20,6 +22,8 @@ import {
   getAttributeAliases,
   getExpressionProperties,
   getPartitionKeyAlias,
+  getPartitionKeyMap,
+  getSortKeyMap,
 } from "../utils";
 import { FormatItem } from "./FormatItem";
 import Entity, {
@@ -56,7 +60,11 @@ type DynamodbToolboxQueryProps<
   Item extends O.Object,
   CompositePrimaryKey extends O.Object
 > = {
-  options: { attributes?: string[] };
+  options: {
+    attributes?: string[];
+    partitionPath?: string;
+    startKeyPath?: string;
+  };
 } & {
   entity: Entity<
     EntityItemOverlay,
@@ -178,8 +186,13 @@ export class DynamodbToolboxQuery<
       resources: [tableArn],
     });
 
-    const { ProjectionExpression, ExpressionAttributeNames } =
-      getExpressionProperties(entity, options.attributes);
+    const { attributes, startKeyPath, partitionPath } = options;
+
+    const {
+      ProjectionExpression,
+      ExpressionAttributeNames,
+      ExclusiveStartKey,
+    } = getExpressionProperties(entity, attributes);
 
     const queryTask = new CallAwsService(scope, "Query", {
       service: "dynamodb",
@@ -199,10 +212,39 @@ export class DynamodbToolboxQuery<
       },
     });
 
+    const queryWithStartKeyTask = new CallAwsService(
+      scope,
+      "QueryWithStartKey",
+      {
+        service: "dynamodb",
+        action: "query",
+        iamResources: ["arn:aws:states:::aws-sdk:dynamodb:query"],
+        additionalIamStatements: [queryIamStatement],
+        parameters: {
+          TableName: entity.table.name,
+          KeyConditionExpression: "#0 = :val",
+          ExpressionAttributeValues: {
+            ":val": {
+              [typeKey]: "$.stateInput",
+            },
+          },
+          ProjectionExpression,
+          ExpressionAttributeNames,
+          ExclusiveStartKey,
+        },
+      }
+    );
+
+    const hasStartKey = new Choice(scope, "Has start key ?");
+
+    const [partitionKey, sortKey] = [
+      getPartitionKeyMap(entity),
+      getSortKeyMap(entity),
+    ];
+
     const {
       comment,
       inputPath,
-      parameters,
       timeout,
       heartbeat,
       credentials,
@@ -222,19 +264,51 @@ export class DynamodbToolboxQuery<
     map.iterator(
       new FormatItem(scope, "Format", {
         entity,
-        options: { attributes: options.attributes },
+        options: { attributes },
       })
     );
 
-    const chain = queryTask.next(
-      map.next(
-        new Pass(scope, "OutputProcessing", {
-          outputPath,
-          parameters: resultSelector,
-          resultPath,
-        })
-      )
+    const transformLastEvaluatedKey = new Pass(
+      scope,
+      "TransformLastEvaluatedKey",
+      {
+        inputPath: "$.LastEvaluatedKey",
+        parameters: {
+          [`${partitionKey}.$`]: `$.${partitionKey}.${
+            TYPE_MAPPING[entity.schema.attributes[partitionKey].type]
+          }`,
+          [`${sortKey}.$`]: `$.${sortKey}.${
+            TYPE_MAPPING[entity.schema.attributes[partitionKey].type]
+          }`,
+        },
+      }
     );
+
+    const mapOnItemsChain = map.next(
+      new Pass(scope, "OutputProcessing", {
+        outputPath,
+        parameters: resultSelector,
+        resultPath,
+      })
+    );
+
+    const hasLastEvaluatedKey = new Choice(scope, "Has Last Evaluated Key ?");
+    hasLastEvaluatedKey
+      .when(
+        Condition.isPresent("$.LastEvaluatedKey"),
+        transformLastEvaluatedKey.next(mapOnItemsChain)
+      )
+      .otherwise(mapOnItemsChain);
+
+    const definition = hasStartKey
+      .when(
+        Condition.and(
+          Condition.isPresent(`$.startKey['${partitionKey}']`),
+          Condition.isPresent(`$.startKey['${sortKey}']`)
+        ),
+        queryWithStartKeyTask.next(hasLastEvaluatedKey)
+      )
+      .otherwise(queryTask.next(hasLastEvaluatedKey));
 
     const logGroup = new LogGroup(scope, "QueryStateMachineLogGroup", {
       retention: RetentionDays.ONE_DAY,
@@ -242,7 +316,7 @@ export class DynamodbToolboxQuery<
     });
 
     const { stateMachineArn } = new StateMachine(scope, "QueryStateMachine", {
-      definition: chain,
+      definition,
       stateMachineType: StateMachineType.EXPRESS,
       logs: {
         destination: logGroup,
@@ -266,7 +340,8 @@ export class DynamodbToolboxQuery<
       parameters: {
         StateMachineArn: stateMachineArn,
         Input: {
-          "stateInput.$": parameters ?? "$",
+          "stateInput.$": partitionPath ?? "$",
+          ...(options.startKeyPath ? { "startKey.$": startKeyPath } : {}),
         },
       },
       resultSelector: {
