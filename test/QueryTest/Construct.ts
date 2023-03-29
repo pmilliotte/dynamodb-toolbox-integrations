@@ -28,7 +28,11 @@ export class StateMachineWithQueryTask extends Construct {
     const queryTask = new DynamodbToolboxQuery(this, "QueryTest", {
       entity: TestQueryEntity,
       tableArn,
-      options: { attributes },
+      options: {
+        attributes,
+        startKeyPath: "$.startKey",
+        partitionPath: "$.partitionKey",
+      },
     });
 
     const logGroup = new LogGroup(this, "QueryLogGroup", {
