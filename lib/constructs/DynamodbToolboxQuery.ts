@@ -281,6 +281,7 @@ export class DynamodbToolboxQuery<
             TYPE_MAPPING[entity.schema.attributes[partitionKey].type]
           }`,
         },
+        resultPath: "$.LastEvaluatedKey",
       }
     );
 
