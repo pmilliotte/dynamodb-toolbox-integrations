@@ -1,25 +1,20 @@
 {
-  "name": "sfn-dynamodb-toolbox-integrations",
-  "version": "0.1.0-alpha",
+  "name": "sfn-optional-input-parameters",
+  "version": "1.0.0",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "scripts": {
     "build": "tsc",
     "synth": "cdk synth --app \"npx ts-node --prefer-ts-exts test/integ.dynamodb-toolbox.ts\" testStack",
     "watch": "tsc -w",
-    "test": "jest",
-    "integ": "rm -rf dist; tsc; integ-runner --parallel-regions eu-west-1 --update-on-failed --directory dist/test --disable-update-workflow --force --verbose --profiles default --clean false",
     "test-unit": "vitest run"
   },
   "files": [
     "dist/lib/*"
   ],
   "devDependencies": {
-    "@aws-cdk/integ-runner": "^2.56.0",
-    "@aws-cdk/integ-tests-alpha": "^2.56.0-alpha.0",
     "@aws-sdk/client-sfn": "^3.211.0",
     "@types/aws-lambda": "^8.10.108",
-    "@types/jest": "^27.5.2",
     "@types/lodash": "^4.14.189",
     "@types/node": "^18.13.0",
     "@types/prettier": "2.6.0",
@@ -29,9 +24,7 @@
     "aws-lambda": "^1.0.7",
     "constructs": "^10.1.124",
     "esbuild": "^0.15.12",
-    "jest": "^27.5.1",
     "lodash": "^4.17.21",
-    "ts-jest": "^27.1.4",
     "typescript": "^4.9.5",
     "vite": "^3.1.7",
     "vite-tsconfig-paths": "^3.5.0",
